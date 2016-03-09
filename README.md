@@ -33,7 +33,9 @@ The samples and loss plot will apear at `display` web interface.
 
 ## Sample
 
-# Stilization
+
+
+# Stylization
 
 ## Prepare
 
