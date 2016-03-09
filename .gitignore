@@ -1,4 +1,5 @@
-data
+data/*
+!data/pretrained
+data/pretrained/*
 !data/pretrained/download_models.sh
 !data/textures
-!data/out
