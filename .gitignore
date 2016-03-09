@@ -1,5 +1,9 @@
 data/*
+data/*/*
 !data/pretrained
-data/pretrained/*
+!data/out
+
 !data/pretrained/download_models.sh
+!data/out/.gitkeep
+
 !data/textures
