@@ -29,6 +29,8 @@ This works good for me:
 th texture_train.lua -texture data/textures/red-peppers256.o.jpg -gpu 0 -model_name pyramid2 -backend cudnn -num_iterations 1500 -vgg_no_pad -normalize_gradients -learning_rate 5e-1 -noise_depth 16
 ```
 
+- `vgg_no_pad` correspondes to padding option used in VGG. If set, padding mode = `valid`.
+
 The samples and loss plot will apear at `display` web interface. 
 
 ### Sample

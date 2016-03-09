@@ -39,7 +39,7 @@ cmd:option('-backend', 'nn', 'nn|cudnn')
 cmd:option('-no_circ', false, 'Whether to use circular padding for convolutions.')
 
 params = cmd:parse(arg)
-params.texture_weight = 1e3
+params.texture_weight = 1
 
 
 if params.backend == 'cudnn' then
