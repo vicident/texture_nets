@@ -39,11 +39,38 @@ function SpatialCircularPadding:updateOutput(input)
    -- copy input to output
    c_output:copy(c_input)
 
-   self.output:narrow(3, 1, self.pad_t):copy(input:narrow(3, input:size(3) - self.pad_t + 1, self.pad_t))
-   self.output:narrow(3, input:size(3) + self.pad_t + 1, self.pad_b):copy(input:narrow(3, 1, self.pad_b))
+   -----------------------------------------------------------------------
+   -- It should be done like folowing, but it is not clear about corners, 
+   -- Filling them with 0 is bad idea, since NN will find the corners then 
+   -- So use a little weird version
+   ------------------------------------------------------------------------
 
-   self.output:narrow(4, 1, self.pad_l):copy(input:narrow(4, input:size(4) - self.pad_l + 1, self.pad_l))
-   self.output:narrow(4, input:size(4) + self.pad_l + 1, self.pad_r):copy(input:narrow(4, 1, self.pad_r))
+   -- local tb_slice = self.output:narrow(4, self.pad_l+1,  input:size(4))
+   -- local lr_slice = self.output:narrow(3, self.pad_t+1,  input:size(3))
+
+   -- tb_slice:narrow(3, 1, self.pad_t):copy(input:narrow(3, input:size(3) - self.pad_t + 1, self.pad_t))
+   -- tb_slice:narrow(3, input:size(3) + self.pad_t + 1, self.pad_b):copy(input:narrow(3, 1, self.pad_b))
+
+   -- lr_slice:narrow(4, 1, self.pad_l):copy(input:narrow(4, input:size(4) - self.pad_l + 1, self.pad_l))
+   -- lr_slice:narrow(4, input:size(4) + self.pad_l + 1, self.pad_r):copy(input:narrow(4, 1, self.pad_r))
+
+   -- zero out corners
+   -- self.output:narrow(4, 1, self.pad_l):narrow(3, 1, self.pad_t):zero()
+   -- self.output:narrow(4, 1, self.pad_l):narrow(3, input:size(3) + self.pad_t + 1, self.pad_b):zero()
+   -- self.output:narrow(4, input:size(4) + self.pad_l + 1, self.pad_r):narrow(3, 1, self.pad_t):zero()
+   -- self.output:narrow(4, input:size(4) + self.pad_l + 1, self.pad_r):narrow(3, input:size(3) + self.pad_t + 1, self.pad_b):zero()
+
+   -----------------------------------------------------------------------
+   -- About right, but fills corners with something .. 
+   -----------------------------------------------------------------------
+
+   self.output:narrow(3,1,self.pad_t):copy(self.output:narrow(3,input:size(3) + 1,self.pad_t))
+   self.output:narrow(3,input:size(3) + self.pad_t + 1,self.pad_b):copy(self.output:narrow(3,self.pad_t + 1,self.pad_b))
+
+   self.output:narrow(4,1,self.pad_l):copy(self.output:narrow(4,input:size(4) + 1,self.pad_l))
+   self.output:narrow(4,input:size(4) + self.pad_l + 1,self.pad_r):copy(self.output:narrow(4,self.pad_l+1,self.pad_r))
+
+
 
    return self.output
 end
@@ -61,6 +88,18 @@ function SpatialCircularPadding:updateGradInput(input, gradOutput)
    cg_output = cg_output:narrow(3, 1, cg_output:size(3) - self.pad_b)
    cg_output = cg_output:narrow(4, 1 + self.pad_l, cg_output:size(4) - self.pad_l)
    cg_output = cg_output:narrow(4, 1, cg_output:size(4) - self.pad_r)
+
+
+   -- Border gradient
+   local tb_slice = gradOutput:narrow(4, self.pad_l+1,  input:size(4))
+   local lr_slice = gradOutput:narrow(3, self.pad_t+1,  input:size(3))
+
+   cg_output:narrow(3, input:size(3) - self.pad_t + 1, self.pad_t):add(tb_slice:narrow(3, 1, self.pad_t))
+   cg_output:narrow(3, 1, self.pad_b):add(tb_slice:narrow(3, input:size(3) + self.pad_t + 1, self.pad_b))
+
+   cg_output:narrow(4, input:size(4) - self.pad_l + 1, self.pad_l):add(lr_slice:narrow(4, 1, self.pad_l))
+   cg_output:narrow(4, 1, self.pad_r):add(lr_slice:narrow(4, input:size(4) + self.pad_l + 1, self.pad_r))
+
 
    self.gradInput = cg_output
    

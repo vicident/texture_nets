@@ -1,3 +1,7 @@
+require 'cutorch'
+require 'cudnn'
+require 'nn'
+
 loadcaffe_wrap = require 'src/loadcaffe_wrapper'
 
 require 'src/SpatialCircularPadding'
@@ -13,13 +17,13 @@ function convc(in_,out_, k, s, m)
 
     local pad = (k-1)/2*m
 
-     if pad == 0 then
-      return cudnn.SpatialConvolution(in_, out_, k, k, s, s, 0, 0)
+    if pad == 0 then
+      return backend.SpatialConvolution(in_, out_, k, k, s, s, 0, 0)
     else
 
       local net = nn.Sequential()
       net:add(nn.SpatialCircularPadding(pad,pad,pad,pad))
-      net:add(nn.SpatialConvolution(in_, out_, k, k, s, s, 0, 0))
+      net:add(backend.SpatialConvolution(in_, out_, k, k, s, s, 0, 0))
 
       return net
     end
@@ -28,37 +32,12 @@ end
 function conv(in_,out_, k, s, m)
     m = m or 1
     s = s or 1
-    return nn.SpatialConvolution(in_, out_, k, k, s, s, (k-1)/2*m, (k-1)/2*m)
+    return backend.SpatialConvolution(in_, out_, k, k, s, s, (k-1)/2*m, (k-1)/2*m)
 end
 
 function bn(in_, m)
     return nn.SpatialBatchNormalization(in_,nil,m)
 end
-
-----------------------------------------------------------
---
-----------------------------------------------------------
-
-
-local GN, parent = torch.class('nn.GradNormalization', 'nn.Module')
-
-function GN:updateOutput(input)
-    self.output = input
-   return self.output
-end
-
-function GN:updateGradInput(input, gradOutput)
-   self.gradInput = self.gradInput or gradOutput:clone()
-   if self.gradInput:nElement() ~=  gradOutput:nElement() then
-     self.gradInput=  gradOutput:clone()
-   end
-   self.gradInput:copy(gradOutput)
-
-   self.gradInput:div(torch.abs(self.gradInput):sum())
-   return self.gradInput
-end
-
-
 
 ---------------------------------------------------------
 -- Helper function
@@ -111,6 +90,51 @@ function DummyGradOutput:updateGradInput(input, gradOutput)
   return self.gradInput 
 end
 
+----------------------------------------------------------
+-- NoiseFill 
+----------------------------------------------------------
+-- Fills input with noise
+
+local NoiseFill, parent = torch.class('nn.NoiseFill', 'nn.Module')
+
+function NoiseFill:updateOutput(input)
+    self.output = input
+    self.output:uniform()
+   return self.output
+end
+
+function NoiseFill:updateGradInput(input, gradOutput)
+   self.gradInput = gradOutput
+   return self.gradInput
+end
+
+----------------------------------------------------------
+-- GenNoise 
+----------------------------------------------------------
+-- Generates a tensor with noise
+local GenNoise, parent = torch.class('nn.GenNoise', 'nn.Module')
+
+function  GenNoise:__init(num_planes)
+    self.num_planes = num_planes
+end
+function GenNoise:updateOutput(input)
+    self.sz = input:size()
+
+    self.sz_ = input:size()
+    self.sz_[2] = self.num_planes
+
+    self.output = self.output or torch.CudaTensor(self.sz_)
+    
+    -- It is concated with normed data, so gen from N(0,1)
+    self.output:normal(0,1)
+
+   return self.output
+end
+
+function GenNoise:updateGradInput(input, gradOutput)
+   self.gradInput = self.gradInput or torch.CudaTensor(self.sz):fill(0)
+   return self.gradInput
+end
 
 ---------------------------------------------------------
 -- Image processing
@@ -138,3 +162,37 @@ function deprocess(img)
   img = img:index(1, perm):div(255.0)
   return img
 end
+
+
+---------------------------------------------------------
+-- netLighter https://github.com/Atcold/net-toolkit
+---------------------------------------------------------
+function nilling(module)
+  module.gradBias   = nil
+  if module.finput then module.finput = torch.CudaTensor() end
+  module.gradWeight = nil
+  module.output     = torch.CudaTensor()
+  module.fgradInput = nil
+  module.gradInput  = nil
+  module._gradOutput = nil
+  if module.indices then module.indices = torch.CudaTensor() end
+end
+
+function netLighter(network)
+  nilling(network)
+  if network.modules then
+    for _,a in ipairs(network.modules) do
+       netLighter(a)
+    end
+  end
+end
+
+-- function dump_net(save_path, model)
+  -- cudnn.convert(model, nn)
+  -- print(model)
+  
+  -- model = model:float()
+  -- netLighter(model)
+
+  -- torch.save(save_path, model)
+-- end
