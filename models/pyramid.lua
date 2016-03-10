@@ -1,4 +1,5 @@
 -- A model from the paper
+
 local ratios = {32, 16, 8, 4, 2, 1}
 
 local act = function() return nn.LeakyReLU(nil, true) end

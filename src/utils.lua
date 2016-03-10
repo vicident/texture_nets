@@ -1,9 +1,7 @@
-require 'cutorch'
-require 'cudnn'
-require 'nn'
+-- require 'cutorch'
+-- require 'nn'
 
 loadcaffe_wrap = require 'src/loadcaffe_wrapper'
-
 require 'src/SpatialCircularPadding'
 
 ----------------------------------------------------------

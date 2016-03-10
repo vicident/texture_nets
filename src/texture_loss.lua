@@ -1,4 +1,3 @@
-
 -- Returns a network that computes batch of CxC Gram matrix from inputs
 function GramMatrix()
   local net = nn.Sequential()

@@ -1,8 +1,6 @@
-require 'torch'
 require 'cutorch'
 require 'nn'
 require 'cunn'
-require 'cudnn'
 require 'image'
 require 'optim'
 
@@ -15,7 +13,7 @@ local cmd = torch.CmdLine()
 
 cmd:option('-texture_layers', 'relu1_1,relu2_1,relu3_1,relu4_1,relu5_1', 'Layers to attach texture loss.')
 
-cmd:option('-texture', 'data/style/pleades.jpg','Style target image')
+cmd:option('-texture', 'data/style/pleades.jpg', 'Style target image')
 
 cmd:option('-learning_rate', 1e-1)
 cmd:option('-num_iterations', 1500)
@@ -41,8 +39,8 @@ cmd:option('-no_circ', false, 'Whether to use circular padding for convolutions.
 params = cmd:parse(arg)
 params.texture_weight = 1
 
-
 if params.backend == 'cudnn' then
+  require 'cudnn'
   cudnn.benchmark = true
   backend = cudnn
 else
@@ -54,17 +52,12 @@ if not params.no_circ then
   conv = convc
 end
 
-if params.style_size == 0 then
-  params.style_size =  params.image_size
-end
 cutorch.setDevice(params.gpu+1)
 
 net_input_depth = params.noise_depth
 
-
-
 -- Define model
-net = require('models/' .. params.model_name):cuda()
+local net = require('models/' .. params.model_name):cuda()
 
 -- Setup descriptor net
 local descriptor_net, _, texture_losses = create_loss_net(params)
@@ -140,7 +133,7 @@ for it = 1, params.num_iterations do
     display.plot(loss_history, {win=params.gpu+4, labels={'iteration', 'Loss'}, title='Gpu ' .. params.gpu .. ' Loss'})
   end
   
-  if it%200 == 0 then 
+  if it%300 == 0 then 
     state.learningRate = state.learningRate*0.8 
   end
 
