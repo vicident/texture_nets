@@ -129,7 +129,7 @@ for it = 1, params.num_iterations do
       image.save(params.tmp_path .. 'train' .. i .. '_' .. it .. '.png',img)
     end
 
-    display.image(imgs, {win=params.gpu, width=params.image_size*3,title = params.gpu})
+    display.image(imgs, {win=params.gpu, width=params.image_size*3, title = params.gpu})
     display.plot(loss_history, {win=params.gpu+4, labels={'iteration', 'Loss'}, title='Gpu ' .. params.gpu .. ' Loss'})
   end
   
