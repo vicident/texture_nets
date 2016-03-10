@@ -1,6 +1,7 @@
 require 'cutorch'
 require 'nn'
 require 'cunn'
+require 'cudnn'
 require 'image'
 require 'src/utils.lua'
 

@@ -11,7 +11,6 @@ local conv_num = 8
 
 local cur = nil
 for i = 1,#ratios do
-      -- local j = #ratios - i + 1
         seq = nn.Sequential()
 
         local tmp =  nn.SpatialAveragePooling(ratios[i],ratios[i],ratios[i],ratios[i],0,0)
@@ -71,5 +70,5 @@ for i = 1,#ratios do
     end
 end
 model = cur
-print (model)
+
 return model

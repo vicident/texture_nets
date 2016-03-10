@@ -67,5 +67,5 @@ for i = 1,#ratios do
     end
 end
 model = cur
-print (model)
+
 return model
