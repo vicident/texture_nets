@@ -26,9 +26,9 @@ The generator will fit the texture
 
 ![Texture](data/textures/red-peppers256.o.jpg)
 
-Here is a sample of size `512x512` after learning for 700 iterations:
+And here is a sample of size `512x512` after learning for 700 iterations:
 
-![Sample](data/sample.png)
+![Sample](data/readme_pics/peppers_sample.png)
 
 
 You may also explore other models. We found `pyramid2` requires bigger `learning rate` of about `5e-1`. To prevent degrading noise dimentionality should be increased: `noise_depth 16`. It also converges slower.
@@ -54,6 +54,17 @@ th texture_sample.lua -model data/out/model.t7 -noise_depth 3 -sample_size 512
 
 The code will be uploaded shortly.
 
+
+Examples: 
+![Sample](data/readme_pics/tiger.jpg)
+
+![Sample](data/readme_pics/tiger_starry.jpg)
+It is much different to what original algorithm would generate, but quite nice. 
+
+In one of the experiments the generator failed to learn Van Gogh, but went very good.
+
+![Sample](data/readme_pics/pseudo.png)
+
 ### Prepare
 
 Extract content from `relu4_2` layer. We used Imagenet validation set.
@@ -66,4 +77,4 @@ th scripts/extract4_2.lua -gpu 1 -images_path path/to/image/dir
 Was tested with 12Gb Nvidia Tesla K40m GPU and Ubuntu 14.04. 
 
 
-The code is based on [Justin Johnson's code](https://github.com/jcjohnson/neural-style) for artistic style. 
+The code is based on [Justin Johnson's great code](https://github.com/jcjohnson/neural-style) for artistic style. 

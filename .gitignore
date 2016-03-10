@@ -3,7 +3,8 @@ data/*/*
 !data/pretrained
 !data/out
 
-!data/sample.png
+!data/readme_pics
+!data/readme_pics/*
 !data/pretrained/download_models.sh
 !data/out/.gitkeep
 
