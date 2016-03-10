@@ -23,9 +23,11 @@ This command should train a generator close to what is presented in the paper. I
 th texture_train.lua -texture data/textures/red-peppers256.o.jpg -model_name pyramid -backend nn -num_iterations 1500 -vgg_no_pad -normalize_gradients
 ```
 The generator will fit the texture
+
 ![Texture](data/textures/red-peppers256.o.jpg)
 
 Here is a sample of size `512x512` after learning for 700 iterations:
+
 ![Sample](data/sample.png)
 
 
