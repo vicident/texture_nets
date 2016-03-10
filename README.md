@@ -59,9 +59,9 @@ Examples:
 ![Sample](data/readme_pics/tiger.jpg)
 
 ![Sample](data/readme_pics/tiger_starry.jpg)
-It is much different to what original algorithm would generate, but quite nice. 
+It is much different to what original algorithm would generate, still quite nice. 
 
-In one of the experiments the generator failed to learn Van Gogh, but went very good.
+In one of the experiments the generator failed to learn Van Gogh, but went very stylish.
 
 ![Sample](data/readme_pics/pseudo.png)
 
