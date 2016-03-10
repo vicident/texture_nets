@@ -1,7 +1,9 @@
--- require 'cutorch'
--- require 'nn'
+require 'cutorch'
+require 'cudnn'
+require 'nn'
 
 loadcaffe_wrap = require 'src/loadcaffe_wrapper'
+
 require 'src/SpatialCircularPadding'
 
 ----------------------------------------------------------
@@ -9,7 +11,6 @@ require 'src/SpatialCircularPadding'
 ----------------------------------------------------------
 
 function convc(in_,out_, k, s, m)
-    print ('using convc')
     m = m or 1
     s = s or 1
 
@@ -110,6 +111,7 @@ end
 -- GenNoise 
 ----------------------------------------------------------
 -- Generates a tensor with noise
+
 local GenNoise, parent = torch.class('nn.GenNoise', 'nn.Module')
 
 function  GenNoise:__init(num_planes)
