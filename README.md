@@ -101,7 +101,7 @@ This model tried to fit both texture and content losses on a fixed set of 16 ima
 
 # Hardware
 - The code was tested with 12GB NVIDIA Tesla K40m GPU and Ubuntu 14.04. 
-- You may decrease `batch_size`, image_size`, `noise_depth` if the model do not fit your GPU memory.
+- You may decrease `batch_size`, `image_size`, `noise_depth` if the model do not fit your GPU memory.
 - `pyramid2` is much more memory efficient than `pyramid`, more, you can decrease the number of filters in there.
 - The pretrained models do not need much memory to sample.
 
