@@ -1,4 +1,6 @@
-Learn neural network from one image!
+Learn a neural network from one image!
+
+In [the paper] we describe a faster way to generate textures and stylize images. It requires learning a feedforward generator with a loss function proposed by Gatys et. al. which takes in our experiments about an hour or two. When generator is trained, a texture sample of any size can be generated instantly.
 
 ## Pretrained models
 You can find two `iTorch` notebooks as well as 8 pretrained models in `supplementary` directory. You need a GPU (nn.SpatialBatchNormalization throws a error in CPU mode), `torch`, and `iTorch` installed to try them.
