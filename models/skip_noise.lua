@@ -1,5 +1,5 @@
 -- Decoder-encoder like model with skip-connections 
--- and additional noise inputs.
+-- and additional noise inputs. 
 
 local nums_3x3down = {16, 32, 64, 128,128}
 local nums_1x1 = {4, 4, 4, 4, 4}
@@ -11,7 +11,7 @@ local act = function() return nn.LeakyReLU(nil, true) end
 
 local cur_depth = nil
 
-local model = nn.Sequential():add(nn.NoiseFill())
+local model = nn.Sequential():add(nn.NoiseFill(num_noise_channels))
 local model_tmp = model
 
 input_depth = net_input_depth

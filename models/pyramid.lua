@@ -13,7 +13,7 @@ for i = 1,#ratios do
         local tmp =  nn.SpatialAveragePooling(ratios[i],ratios[i],ratios[i],ratios[i],0,0)
         
         seq:add(tmp)
-        seq:add(nn.NoiseFill())
+        seq:add(nn.NoiseFill(num_noise_channels))
 
         seq:add(conv(net_input_depth, conv_num, 3))
         seq:add(bn(conv_num))
@@ -33,7 +33,6 @@ for i = 1,#ratios do
         seq:add(nn.SpatialUpSamplingNearest(2))
         cur = seq
     else
-        print(i)
         local cur_temp = cur
 
         cur = nn.Sequential()

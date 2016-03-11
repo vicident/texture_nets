@@ -6,7 +6,7 @@ local nums_3x3down = {16, 32, 64, 128, 128}
 local nums_1x1 = {4, 4, 4, 4, 4}
 local nums_3x3up = {16, 32, 64, 128, 128}
 
-local model = nn.Sequential():add(nn.NoiseFill())
+local model = nn.Sequential():add(nn.NoiseFill(num_noise_channels))
 model_tmp = model
 
 

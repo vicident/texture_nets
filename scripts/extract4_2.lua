@@ -12,7 +12,7 @@ loadcaffe_wrap = require '../src/loadcaffe_wrapper'
 ---------------------------------------------------------
 local cmd = torch.CmdLine()
 
-cmd:option('-images_path', '/home/cygnus/ILSVRC2012_img_val')
+cmd:option('-images_path', 'path/to/imagenet_val')
 cmd:option('-save_to', 'data/256.hdf5')
 cmd:option('-resize_to', 256)
 

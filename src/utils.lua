@@ -92,14 +92,28 @@ end
 ----------------------------------------------------------
 -- NoiseFill 
 ----------------------------------------------------------
--- Fills input with noise
+-- Fills last `num_noise_channels` channels of an existing `input` tensor with noise. 
 
 local NoiseFill, parent = torch.class('nn.NoiseFill', 'nn.Module')
 
+function NoiseFill:__init(num_noise_channels)
+  parent.__init(self)
+
+  -- last `num_noise_channels` maps will be filled with noise
+  self.num_noise_channels = num_noise_channels
+end
+
 function NoiseFill:updateOutput(input)
-    self.output = input
-    self.output:uniform()
-   return self.output
+  self.output = input
+
+  if self.num_noise_channels > 0 then
+
+    local num_channels = input:size(2)
+    local first_noise_channel = num_channels - self.num_noise_channels + 1 
+
+    self.output:narrow(2,first_noise_channel, self.num_noise_channels):uniform()
+  end
+  return self.output
 end
 
 function NoiseFill:updateGradInput(input, gradOutput)
@@ -110,7 +124,8 @@ end
 ----------------------------------------------------------
 -- GenNoise 
 ----------------------------------------------------------
--- Generates a tensor with noise
+-- Generates a new tensor with noise of spatial size as `input`
+-- Forgets about `input` returning 0 gradInput.
 
 local GenNoise, parent = torch.class('nn.GenNoise', 'nn.Module')
 

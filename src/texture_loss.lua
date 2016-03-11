@@ -24,8 +24,6 @@ function TextureLoss:__init(strength, target, normalize)
   self.gram = GramMatrix()
   self.G = nil
   self.crit = nn.MSECriterion()
-
-  print (self.strength)
 end
 
 

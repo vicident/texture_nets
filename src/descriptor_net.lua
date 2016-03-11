@@ -15,10 +15,10 @@ function create_loss_net(params)
   texture_image = image.scale(texture_image, params.image_size, 'bilinear')
   local texture_image = preprocess(texture_image):cuda():add_dummy()
 
-
   params.content_layers = params.content_layers or ''
 
-  local content_layers = params.content_layers:split(",")
+  print (params.content_layers)
+  local content_layers = params.content_layers:split(",") 
   local texture_layers   = params.texture_layers:split(",")
 
   -- Set up the network, inserting texture and content loss modules
@@ -38,7 +38,7 @@ function create_loss_net(params)
       end
       
       if params.vgg_no_pad and (layer_type == 'nn.SpatialConvolution' or layer_type == 'nn.SpatialConvolutionMM' or layer_type == 'cudnn.SpatialConvolution') then
-          print ('Padding set to 0')
+          print (name .. ': padding set to 0')
 
           layer.padW = 0 
           layer.padH = 0 

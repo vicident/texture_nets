@@ -79,4 +79,4 @@ th scripts/extract4_2.lua -gpu 1 -images_path path/to/image/dir
 Was tested with 12Gb Nvidia Tesla K40m GPU and Ubuntu 14.04. 
 
 
-The code is based on [Justin Johnson's great code](https://github.com/jcjohnson/neural-style) for artistic style. 
+The code is based on [Justin Johnsons great code](https://github.com/jcjohnson/neural-style) for artistic style. 
