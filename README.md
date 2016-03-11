@@ -33,16 +33,16 @@ And here is a sample of size `512x512` after learning for 700 iterations:
 ![Sample](data/readme_pics/peppers_sample.png)
 
 
-You may also explore other models. We found `pyramid2` requires bigger `learning rate` of about `5e-1`. To prevent degrading noise dimentionality should be increased: `noise_depth 16`. It also converges slower.
+You may also explore other models. We found `pyramid2` requires bigger `learning rate` of about `5e-1`. To prevent degrading noise dimensionality should be increased: `noise_depth 16`. It also converges slower.
 
 This works good for me: 
 ```
 th texture_train.lua -texture data/textures/red-peppers256.o.jpg -gpu 0 -model_name pyramid2 -backend cudnn -num_iterations 1500 -vgg_no_pad -normalize_gradients -learning_rate 5e-1 -noise_depth 16
 ```
 
-- `vgg_no_pad` correspondes to padding option used in VGG. If set, padding mode = `valid`.
+- `vgg_no_pad` corresponds to padding option used in VGG. If set, padding mode = `valid`.
 
-The samples and loss plot will apear at `display` web interface. 
+The samples and loss plot will appear at `display` web interface. 
 
 ### Sample
 
@@ -65,7 +65,7 @@ th scripts/extract4_2.lua -images_path <path/ILSVRC2012>
 ```
 ### Train
 
-Use this command to learn a generator to sylize like in the next example.
+Use this command to learn a generator to stylize like in the next example.
 ```
 th stylization_train.lua -style_image data/textures/cezanne.jpg -train_hdf5 <path/to/generated/hdf5> -noise_depth 3 -model_name pyramid -normalize_gradients -train_images_path <path/to/ILSVRC2012> -content_weight 0.8
 
@@ -82,7 +82,7 @@ TODO
 ![Processed](data/readme_pics/kitty_cezanne.jpg)
 
 #### Variations
-We were not able to archive similar results to original parer of L. Gatys on artistic syle, which is partially explained by balance problem (read the paper for the details). Yet, while not transferring the style exactly as expected, models produce nice pictures. We tried several hacks to redefine the objective function, which could be more suitable for convolutional parametric generator, none of them worked considerably better, but the results were nice.
+We were not able to archive similar results to original parer of L. Gatys on artistic style, which is partially explained by balance problem (read the paper for the details). Yet, while not transferring the style exactly as expected, models produce nice pictures. We tried several hacks to redefine the objective function, which could be more suitable for convolutional parametric generator, none of them worked considerably better, but the results were nice.
 
 For the next pair we used a generator, trained using 16 images only. It is funny, that it did not overfit. Also, in this setting the net does not degrade for much longer time if zero padding is used. Note that, tiger image was not in the train set. 
 
@@ -100,7 +100,7 @@ This model tried to fit both texture and content losses on a fixed set of 16 ima
 
 
 # Hardware
-- Was tested with 12Gb NVIDIA Tesla K40m GPU and Ubuntu 14.04. 
+- The code was tested with 12GB NVIDIA Tesla K40m GPU and Ubuntu 14.04. 
 - You may decrease `batch_size`, image_size`, `noise_depth` if the model do not fit your GPU memory.
 - `pyramid2` is much more memory efficient than `pyramid`, more, you can decrease the number of filters in there.
 - The pretrained models do not need much memory to sample.
@@ -109,4 +109,4 @@ This model tried to fit both texture and content losses on a fixed set of 16 ima
 
 The code is based on [Justin Johnsons great code](https://github.com/jcjohnson/neural-style) for artistic style. 
 
-The work is supported by Yandex.
+The work was supported by Yandex.
