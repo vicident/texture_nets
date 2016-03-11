@@ -9,3 +9,4 @@ data/*/*
 !data/out/.gitkeep
 
 !data/textures
+!data/textures/*

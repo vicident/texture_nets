@@ -52,7 +52,7 @@ params.texture = params.style_image
 
 if params.backend == 'cudnn' then
   require 'cudnn'
-  -- cudnn.benchmark = true
+  cudnn.benchmark = true
   backend = cudnn
 else
   backend = nn
@@ -87,13 +87,13 @@ end
 
 local train_hdf5 = hdf5.open(params.train_hdf5, 'r')
 
--- allocate reusable space
+-- Allocate reusable space
 inputs_batch = torch.Tensor(params.batch_size, net_input_depth, params.image_size, params.image_size)
 contents_batch = torch.Tensor(params.batch_size, 512, params.image_size/8, params.image_size/8)
 
 cur_index_train = 1 
 function get_input_train()
-  -- ignore last for simplicity
+  -- Ignore last for simplicity
   if cur_index_train > #image_names - params.batch_size then
     cur_index_train = 1 
   end
@@ -113,7 +113,7 @@ end
 
 iteration = 0
 
--- dummy storage, this will not be changed during training
+-- Dummy storage, this will not be changed during training
 inputs_batch = torch.Tensor(params.batch_size, net_input_depth, params.image_size, params.image_size):uniform():cuda()
 
 local parameters, gradParameters = net:getParameters()
@@ -126,21 +126,21 @@ function feval(x)
   end
   gradParameters:zero()
   
-  -- get batch 
+  -- Get batch 
   local images, contents = get_input_train()  
   
-  -- set current `relu4_2` content 
+  -- Set current `relu4_2` content 
   content_losses[1].target = contents
 
-  -- forward
+  -- Forward
   local out = net:forward(images)
   descriptor_net:forward(out)
   
-  -- backward
+  -- Backward
   local grad = descriptor_net:backward(out, nil)
   net:backward(images, grad)
   
-  -- collect loss
+  -- Collect loss
   local loss = 0
   for _, mod in ipairs(texture_losses) do
     loss = loss + mod.loss
