@@ -1,13 +1,15 @@
 require 'src/content_loss'
 require 'src/texture_loss'
 
+require 'loadcaffe'
+
 function nop()
   -- nop.  not needed by our net
 end
 
 function create_loss_net(params)
     
-  local cnn = loadcaffe_wrap.load(params.proto_file, params.model_file, params.backend):cuda()
+  local cnn = loadcaffe.load(params.proto_file, params.model_file, params.backend):cuda()
 
   -- load texture
   local texture_image = image.load(params.texture, 3)
