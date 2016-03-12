@@ -5,7 +5,7 @@ require 'image'
 require 'hdf5'
 require 'xlua'
 require 'src/utils'
-loadcaffe_wrap = require '../src/loadcaffe_wrapper'
+require 'loadcaffe'
 
 ---------------------------------------------------------
 -- Define params
@@ -49,7 +49,7 @@ end
 
 
 function load_vgg(cmd_params)
-  local vgg = loadcaffe_wrap.load(cmd_params.proto_file, cmd_params.model_file, cmd_params.backend):cuda()
+  local vgg = loadcaffe.load(cmd_params.proto_file, cmd_params.model_file, cmd_params.backend):cuda()
 
   print ('Leaving only 23 modules (till relu4_2')
   for i=1,23 do
