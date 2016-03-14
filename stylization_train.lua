@@ -8,8 +8,8 @@ require 'hdf5'
 
 display = require('display')
 
-require 'src/utils.lua'
-require 'src/descriptor_net.lua'
+require 'src/utils'
+require 'src/descriptor_net'
 
 local cmd = torch.CmdLine()
 

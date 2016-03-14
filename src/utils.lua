@@ -1,5 +1,4 @@
 require 'cutorch'
-require 'cudnn'
 require 'nn'
 
 require 'loadcaffe'
@@ -201,13 +200,3 @@ function netLighter(network)
     end
   end
 end
-
--- function dump_net(save_path, model)
-  -- cudnn.convert(model, nn)
-  -- print(model)
-  
-  -- model = model:float()
-  -- netLighter(model)
-
-  -- torch.save(save_path, model)
--- end
