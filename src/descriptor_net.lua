@@ -19,7 +19,6 @@ function create_loss_net(params)
 
   params.content_layers = params.content_layers or ''
 
-  print (params.content_layers)
   local content_layers = params.content_layers:split(",") 
   local texture_layers   = params.texture_layers:split(",")
 
@@ -40,7 +39,7 @@ function create_loss_net(params)
       end
       
       if params.vgg_no_pad and (layer_type == 'nn.SpatialConvolution' or layer_type == 'nn.SpatialConvolutionMM' or layer_type == 'cudnn.SpatialConvolution') then
-          print (name .. ': padding set to 0')
+          print (name, ': padding set to 0')
 
           layer.padW = 0 
           layer.padH = 0 
@@ -76,7 +75,7 @@ function create_loss_net(params)
         end
 
         local target_features = net:forward(texture_image):clone()
-        local target = gram:forward(nn.View(-1):setNumInputDims(2):forward(target_features[1])):clone()
+        local target = gram:forward(nn.View(-1):cuda():setNumInputDims(2):forward(target_features[1])):clone()
 
         target:div(target_features[1]:nElement())
 
