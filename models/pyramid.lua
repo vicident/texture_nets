@@ -6,11 +6,11 @@ local act = function() return nn.LeakyReLU(nil, true) end
 local conv_num = 8
 
 local cur = nil
-for i = 1,#ratios do
+for i = 1, #ratios do
       
         seq = nn.Sequential()
 
-        local tmp =  nn.SpatialAveragePooling(ratios[i],ratios[i],ratios[i],ratios[i],0,0)
+        local tmp =  nn.SpatialAveragePooling(ratios[i], ratios[i], ratios[i], ratios[i], 0, 0)
         
         seq:add(tmp)
         seq:add(nn.NoiseFill(num_noise_channels))
@@ -39,7 +39,7 @@ for i = 1,#ratios do
 
         -- Batch norm before merging 
         seq:add(bn(conv_num))
-        cur_temp:add(bn(conv_num))
+        cur_temp:add(bn(conv_num*(i-1)))
 
 
         cur:add(nn.Concat(2):add(cur_temp):add(seq))
