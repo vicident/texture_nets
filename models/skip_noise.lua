@@ -51,7 +51,7 @@ for i = 1,#nums_3x3down do
 
         deeper:add(nn.SpatialUpSamplingNearest(2))
 
-        deeper:add(bn(nums_3x3down[i]))
+        deeper:add(bn(k))
         skip_part:add(bn(nums_1x1[i]))
 
         
