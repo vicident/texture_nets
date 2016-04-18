@@ -145,5 +145,4 @@ for it = 1, params.num_iterations do
   end
 end
 -- Clean net and dump it, ~ 500 kB
-netLighter(net)
-torch.save(params.tmp_path .. 'model.t7', net)
+torch.save(params.tmp_path .. 'model.t7', net:clearState())

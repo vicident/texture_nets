@@ -177,26 +177,3 @@ function deprocess(img)
   return img
 end
 
-
----------------------------------------------------------
--- netLighter https://github.com/Atcold/net-toolkit
----------------------------------------------------------
-function nilling(module)
-  module.gradBias   = nil
-  if module.finput then module.finput = torch.CudaTensor() end
-  module.gradWeight = nil
-  module.output     = torch.CudaTensor()
-  module.fgradInput = nil
-  module.gradInput  = nil
-  module._gradOutput = nil
-  if module.indices then module.indices = torch.CudaTensor() end
-end
-
-function netLighter(network)
-  nilling(network)
-  if network.modules then
-    for _,a in ipairs(network.modules) do
-       netLighter(a)
-    end
-  end
-end
