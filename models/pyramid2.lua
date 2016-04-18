@@ -41,7 +41,7 @@ for i = 1,#ratios do
         cur = nn.Sequential()
 
         -- Batch norm before merging 
-        seq:add(bn(filters_num[i - 1]))
+        seq:add(bn(filters_num[i]))
         cur_temp:add(bn(filters_num[i - 1]))
 
 
