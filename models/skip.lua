@@ -28,7 +28,7 @@ for i = 1,#nums_3x3down do
         deeper:add(bn(nums_3x3down[i]))
         deeper:add(act())
 
-        deeper:add(conv(nums_3x3down[i], nums_3x3down[i], 3,1))
+        deeper:add(conv(nums_3x3down[i], nums_3x3down[i], 3))
         deeper:add(bn(nums_3x3down[i]))
         deeper:add(act())
 
@@ -43,11 +43,11 @@ for i = 1,#nums_3x3down do
 
         deeper:add(nn.SpatialUpSamplingNearest(2))
 
-        deeper:add(bn(nums_3x3down[i]))
+        deeper:add(bn(k))
         skip:add(bn(nums_1x1[i]))
         
 
-        model_tmp:add(conv(nums_1x1[i] +  k, nums_3x3up[i], 3,1))
+        model_tmp:add(conv(nums_1x1[i] +  k, nums_3x3up[i], 3))
         model_tmp:add(bn(nums_3x3up[i]))
         model_tmp:add(act())
 

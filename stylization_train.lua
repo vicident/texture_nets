@@ -11,6 +11,9 @@ display = require('display')
 require 'src/utils'
 require 'src/descriptor_net'
 
+----------------------------------------------------------
+-- Parameters
+----------------------------------------------------------
 local cmd = torch.CmdLine()
 
 cmd:option('-style_layers', 'relu1_1,relu2_1,relu3_1,relu4_1,relu5_1', 'Layers to attach texture (style) loss.')
@@ -26,7 +29,7 @@ cmd:option('-train_images_path', 'path/to/imagenet_val', 'Just because I did not
 cmd:option('-learning_rate', 1e-1)
 cmd:option('-num_iterations', 3000)
 
-cmd:option('-batch_size', 16)
+cmd:option('-batch_size', 4)
 cmd:option('-image_size', 256)
 cmd:option('-noise_depth', 3, 'How many noise channels to append to image.')
 
@@ -34,16 +37,23 @@ cmd:option('-gpu', 0, 'Zero indexed gpu number.')
 cmd:option('-tmp_path', 'data/out/', 'Directory to store intermediate results.')
 cmd:option('-model_name', '', 'Path to generator model description file.')
 
-cmd:option('-normalize_gradients', false, 'L1 gradient normalization inside descriptor net. ')
-cmd:option('-vgg_no_pad', false)
+cmd:option('-normalize_gradients', 'false', 'L1 gradient normalization inside descriptor net. ')
+cmd:option('-vgg_no_pad', 'false')
 
 cmd:option('-proto_file', 'data/pretrained/VGG_ILSVRC_19_layers_deploy.prototxt', 'Pretrained')
 cmd:option('-model_file', 'data/pretrained/VGG_ILSVRC_19_layers.caffemodel')
-cmd:option('-backend', 'nn', 'nn|cudnn')
+cmd:option('-backend', 'cudnn', 'nn|cudnn')
 
-cmd:option('-no_circ', false, 'Whether to use circular padding for convolutions.')
+cmd:option('-circular_padding', 'true', 'Whether to use circular padding for convolutions.')
+
+cmd:option('-fix_batch', false, 'Whether to use circular padding for convolutions.')
+
 
 params = cmd:parse(arg)
+
+params.normalize_gradients = params.normalize_gradients ~= 'false'
+params.vgg_no_pad = params.vgg_no_pad ~= 'false'
+params.circular_padding = params.circular_padding ~= 'false'
 
 -- For compatibility with Justin Johnsons code
 params.texture_weight = params.style_weight
@@ -52,6 +62,7 @@ params.texture = params.style_image
 
 if params.backend == 'cudnn' then
   require 'cudnn'
+  cudnn.fastest = true
   cudnn.benchmark = true
   backend = cudnn
 else
@@ -59,7 +70,7 @@ else
 end
 
 -- Whether to use circular padding
-if not params.no_circ then
+if params.circular_padding then
   conv = convc
 end
 
@@ -70,17 +81,14 @@ net_input_depth = 3 + params.noise_depth
 num_noise_channels = params.noise_depth
 
 -- Define model
-net = require('models/' .. params.model_name):cuda()
-
--- Setup descriptor net
-local descriptor_net, content_losses, texture_losses = create_loss_net(params)
+local net = require('models/' .. params.model_name):cuda()
+local descriptor_net, content_losses, texture_losses = create_descriptor_net()
 
 ----------------------------------------------------------
 -- Batch generator
 ----------------------------------------------------------
-
 -- Collect image names 
-image_names = {}
+local image_names = {}
 for f in paths.files(params.train_images_path, 'JPEG') do
   table.insert(image_names, f)
 end
@@ -88,10 +96,10 @@ end
 local train_hdf5 = hdf5.open(params.train_hdf5, 'r')
 
 -- Allocate reusable space
-inputs_batch = torch.Tensor(params.batch_size, net_input_depth, params.image_size, params.image_size)
-contents_batch = torch.Tensor(params.batch_size, 512, params.image_size/8, params.image_size/8)
+local inputs_batch = torch.Tensor(params.batch_size, net_input_depth, params.image_size, params.image_size)
+local contents_batch = torch.Tensor(params.batch_size, 512, params.image_size/8, params.image_size/8)
 
-cur_index_train = 1 
+local cur_index_train = 1 
 function get_input_train()
   -- Ignore last for simplicity
   if cur_index_train > #image_names - params.batch_size then
@@ -102,7 +110,10 @@ function get_input_train()
     contents_batch[i+1] = train_hdf5:read(image_names[cur_index_train + i]..  '_content'):all()
     inputs_batch:narrow(2,1,3)[i+1] = train_hdf5:read(image_names[cur_index_train + i] ..  '_image' ):all()
   end
-  cur_index_train = cur_index_train + params.batch_size
+  
+  if not params.fix_batch then
+    cur_index_train = cur_index_train + params.batch_size
+  end
 
   return inputs_batch:cuda(), contents_batch:cuda() 
 end
@@ -111,13 +122,13 @@ end
 -- feval
 ----------------------------------------------------------
 
-iteration = 0
+local iteration = 0
 
 -- Dummy storage, this will not be changed during training
-inputs_batch = torch.Tensor(params.batch_size, net_input_depth, params.image_size, params.image_size):uniform():cuda()
+-- inputs_batch = torch.Tensor(params.batch_size, net_input_depth, params.image_size, params.image_size):uniform():cuda()
 
 local parameters, gradParameters = net:getParameters()
-loss_history = {}
+local loss_history = {}
 function feval(x)
   iteration = iteration + 1
 
@@ -159,8 +170,8 @@ end
 ----------------------------------------------------------
 print('        Optimize        ')
 
-optim_method = optim.adam
-state = {
+local optim_method = optim.adam
+local state = {
    learningRate = params.learning_rate,
 }
 
@@ -190,12 +201,11 @@ for it = 1, params.num_iterations do
     state.learningRate = state.learningRate*0.8
   end
 
-  -- Dump net, the file is huge
+  -- Dump net
   if it%200 == 0 then 
-    torch.save(params.tmp_path .. 'model.t7', net)
+    torch.save(params.tmp_path .. 'model' .. it .. '.t7', net:clearState())
   end
 end
--- Clean net and dump it, ~ 500 kB
 torch.save(params.tmp_path .. 'model.t7', net:clearState())
 
 train_hdf5:close()

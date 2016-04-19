@@ -1,14 +1,11 @@
 require 'cutorch'
 require 'nn'
-
 require 'loadcaffe'
-
 require 'src/SpatialCircularPadding'
 
 ----------------------------------------------------------
 -- Shortcuts 
 ----------------------------------------------------------
-
 function convc(in_,out_, k, s, m)
     m = m or 1
     s = s or 1
@@ -47,7 +44,12 @@ function torch.add_dummy(self)
   local new_sz = torch.Tensor(sz:size()+1)
   new_sz[1] = 1
   new_sz:narrow(1,2,sz:size()):copy(torch.Tensor{sz:totable()})
-  return self:view(new_sz:long():storage())
+
+  if self:isContiguous() then
+    return self:view(new_sz:long():storage())
+  else
+    return self:reshape(new_sz:long():storage())
+  end
 end
 
 function torch.FloatTensor:add_dummy()
@@ -92,7 +94,6 @@ end
 -- NoiseFill 
 ----------------------------------------------------------
 -- Fills last `num_noise_channels` channels of an existing `input` tensor with noise. 
-
 local NoiseFill, parent = torch.class('nn.NoiseFill', 'nn.Module')
 
 function NoiseFill:__init(num_noise_channels)
@@ -100,17 +101,25 @@ function NoiseFill:__init(num_noise_channels)
 
   -- last `num_noise_channels` maps will be filled with noise
   self.num_noise_channels = num_noise_channels
+  self.mult = 1.0
 end
 
 function NoiseFill:updateOutput(input)
-  self.output = input
+  self.output = self.output or input:new()
+  self.output:resizeAs(input)
 
+  -- copy non-noise part
+  if self.num_noise_channels ~= input:size(2) then
+    local ch_to_copy = input:size(2) - self.num_noise_channels
+    self.output:narrow(2,1,ch_to_copy):copy(input:narrow(2,1,ch_to_copy))
+  end
+
+  -- fill noise
   if self.num_noise_channels > 0 then
-
     local num_channels = input:size(2)
-    local first_noise_channel = num_channels - self.num_noise_channels + 1 
+    local first_noise_channel = num_channels - self.num_noise_channels + 1
 
-    self.output:narrow(2,first_noise_channel, self.num_noise_channels):uniform()
+    self.output:narrow(2,first_noise_channel, self.num_noise_channels):uniform():mul(self.mult)
   end
   return self.output
 end
@@ -130,6 +139,7 @@ local GenNoise, parent = torch.class('nn.GenNoise', 'nn.Module')
 
 function  GenNoise:__init(num_planes)
     self.num_planes = num_planes
+    self.mult = 1.0
 end
 function GenNoise:updateOutput(input)
     self.sz = input:size()
@@ -137,16 +147,19 @@ function GenNoise:updateOutput(input)
     self.sz_ = input:size()
     self.sz_[2] = self.num_planes
 
-    self.output = self.output or torch.CudaTensor(self.sz_)
+    self.output = self.output or input.new()
+    self.output:resize(self.sz_)
     
     -- It is concated with normed data, so gen from N(0,1)
-    self.output:normal(0,1)
+    self.output:normal(0,1):mul(self.mult)
 
    return self.output
 end
 
 function GenNoise:updateGradInput(input, gradOutput)
-   self.gradInput = self.gradInput or torch.CudaTensor(self.sz):fill(0)
+   self.gradInput = self.gradInput or gradOutput.new()
+   self.gradInput:resizeAs(input):zero()
+   
    return self.gradInput
 end
 

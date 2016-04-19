@@ -26,20 +26,25 @@ cmd:option('-gpu', 0, 'Zero indexed gpu number.')
 cmd:option('-tmp_path', 'data/out/', 'Directory to store intermediate results.')
 cmd:option('-model_name', '', 'Path to generator model description file.')
 
-cmd:option('-normalize_gradients', false, 'L1 gradient normalization inside descriptor net. ')
-cmd:option('-vgg_no_pad', false)
+cmd:option('-normalize_gradients', 'false', 'L1 gradient normalization inside descriptor net. ')
+cmd:option('-vgg_no_pad', 'false')
 
 cmd:option('-proto_file', 'data/pretrained/VGG_ILSVRC_19_layers_deploy.prototxt', 'Pretrained')
 cmd:option('-model_file', 'data/pretrained/VGG_ILSVRC_19_layers.caffemodel')
 cmd:option('-backend', 'nn', 'nn|cudnn')
 
-cmd:option('-no_circ', false, 'Whether to use circular padding for convolutions. Use by default.')
+cmd:option('-circular_padding', 'true', 'Whether to use circular padding for convolutions. Use by default.')
 
 params = cmd:parse(arg)
+
+params.normalize_gradients = params.normalize_gradients ~= 'false'
+params.vgg_no_pad = params.vgg_no_pad ~= 'false'
+params.circular_padding = params.circular_padding ~= 'false'
 params.texture_weight = 1
 
 if params.backend == 'cudnn' then
   require 'cudnn'
+  cudnn.fastest = true
   cudnn.benchmark = true
   backend = cudnn
 else
@@ -47,7 +52,7 @@ else
 end
 
 -- Whether to use circular padding
-if not params.no_circ then
+if params.circular_padding then
   conv = convc
 end
 
@@ -58,9 +63,7 @@ num_noise_channels = params.noise_depth
 
 -- Define model
 local net = require('models/' .. params.model_name):cuda()
-
--- Setup descriptor net
-local descriptor_net, _, texture_losses = create_loss_net(params)
+local descriptor_net, _, texture_losses = create_descriptor_net()
 
 ----------------------------------------------------------
 -- feval
@@ -70,8 +73,6 @@ iteration = 0
 
 -- dummy storage, this will not be changed during training
 inputs_batch = torch.Tensor(params.batch_size, net_input_depth, params.image_size, params.image_size):uniform():cuda()
-
-print(net_input_depth)
 
 local parameters, gradParameters = net:getParameters()
 loss_history = {}
@@ -141,7 +142,7 @@ for it = 1, params.num_iterations do
 
   -- Dump net, the file is huge
   if it%200 == 0 then 
-    torch.save(params.tmp_path .. 'model.t7', net)
+    torch.save(params.tmp_path .. 'model' .. it .. '.t7', net:clearState())
   end
 end
 -- Clean net and dump it, ~ 500 kB

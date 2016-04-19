@@ -23,7 +23,7 @@ cd data/pretrained && bash download_models.sh && cd ../..
 
 This command should train a generator close to what is presented in the paper. It is tricky, the variance in the results is rather high, many things lead to degrading (even optimizing for too long time). 
 ```
-th texture_train.lua -texture data/textures/red-peppers256.o.jpg -model_name pyramid -backend nn -num_iterations 1500 -vgg_no_pad -normalize_gradients
+th texture_train.lua -texture data/textures/red-peppers256.o.jpg -model_name pyramid -backend cudnn -num_iterations 1500 -vgg_no_pad true -normalize_gradients true
 ```
 The generator will fit the texture
 
@@ -38,7 +38,7 @@ You may also explore other models. We found `pyramid2` requires bigger `learning
 
 This works good for me: 
 ```
-th texture_train.lua -texture data/textures/red-peppers256.o.jpg -gpu 0 -model_name pyramid2 -backend cudnn -num_iterations 1500 -vgg_no_pad -normalize_gradients -learning_rate 5e-1 -noise_depth 16
+th texture_train.lua -texture data/textures/red-peppers256.o.jpg -gpu 0 -model_name pyramid2 -backend cudnn -num_iterations 1500 -vgg_no_pad true -normalize_gradients true -learning_rate 5e-1 -noise_depth 16
 ```
 
 - `vgg_no_pad` corresponds to padding option used in VGG. If set, padding mode = `valid`.
@@ -68,7 +68,7 @@ th scripts/extract4_2.lua -images_path <path/ILSVRC2012>
 
 Use this command to learn a generator to stylize like in the next example.
 ```
-th stylization_train.lua -style_image data/textures/cezanne.jpg -train_hdf5 <path/to/generated/hdf5> -noise_depth 3 -model_name pyramid -normalize_gradients -train_images_path <path/to/ILSVRC2012> -content_weight 0.8
+th stylization_train.lua -style_image data/textures/cezanne.jpg -train_hdf5 <path/to/generated/hdf5> -noise_depth 3 -model_name pyramid -normalize_gradients true -train_images_path <path/to/ILSVRC2012> -content_weight 0.8
 
 ```
 ### Process

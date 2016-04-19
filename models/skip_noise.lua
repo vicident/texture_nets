@@ -5,16 +5,13 @@ local nums_3x3down = {16, 32, 64, 128,128}
 local nums_1x1 = {4, 4, 4, 4, 4}
 local nums_noise={2, 2, 2, 2, 2}
 local nums_3x3up = {16, 32, 64, 128,128}
-local cur = nil
 
 local act = function() return nn.LeakyReLU(nil, true) end
-
-local cur_depth = nil
 
 local model = nn.Sequential():add(nn.NoiseFill(num_noise_channels))
 local model_tmp = model
 
-input_depth = net_input_depth
+local input_depth = net_input_depth
 for i = 1,#nums_3x3down do
       
         local deeper = nn.Sequential()
@@ -41,7 +38,6 @@ for i = 1,#nums_3x3down do
 
         deeper_main = nn.Sequential()
 
-        -- k = nil
         if i == #nums_3x3down  then
             k = nums_3x3down[i]
         else
@@ -55,7 +51,7 @@ for i = 1,#nums_3x3down do
         skip_part:add(bn(nums_1x1[i]))
 
         
-        model_tmp:add(conv(nums_1x1[i] +  k + nums_noise[i] , nums_3x3up[i], 3,1))
+        model_tmp:add(conv(nums_1x1[i] +  k + nums_noise[i] , nums_3x3up[i], 3))
         model_tmp:add(bn(nums_3x3up[i]))
         model_tmp:add(act())
 

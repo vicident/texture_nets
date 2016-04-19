@@ -22,6 +22,7 @@ cutorch.setDevice(params.gpu+1)
 
 -- Load model
 local model = torch.load(params.model):cuda()
+--model:evaluate()
 
 -- Load image and scale
 local img = image.load(params.input_image, 3)
@@ -35,7 +36,8 @@ input[1]:narrow(1, 1, 3):copy(img)
 
 -- Stylize
 local stylized = model:forward(input:cuda()):double()
-stylized = torch.clamp(deprocess(stylized[1]), 0, 1)
+-- stylized = torch.clamp(deprocess(stylized[1]), 0, 1)
+stylized = deprocess(stylized[1])
 
 -- Save
 image.save(params.save_path, stylized)

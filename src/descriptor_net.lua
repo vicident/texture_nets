@@ -7,7 +7,7 @@ function nop()
   -- nop.  not needed by our net
 end
 
-function create_loss_net(params)
+function create_descriptor_net()
     
   local cnn = loadcaffe.load(params.proto_file, params.model_file, params.backend):cuda()
 
@@ -69,10 +69,7 @@ function create_loss_net(params)
       ---------------------------------
       if name == texture_layers[next_texture_idx] then
         print("Setting up texture layer  ", i, ":", layer.name)
-        local gram = GramMatrix():float()
-        if params.gpu >= 0 then
-          gram = gram:cuda()
-        end
+        local gram = GramMatrix():cuda()
 
         local target_features = net:forward(texture_image):clone()
         local target = gram:forward(nn.View(-1):cuda():setNumInputDims(2):forward(target_features[1])):clone()
