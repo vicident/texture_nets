@@ -23,7 +23,7 @@ cd data/pretrained && bash download_models.sh && cd ../..
 
 This command should train a generator close to what is presented in the paper. It is tricky, the variance in the results is rather high, many things lead to degrading (even optimizing for too long time). 
 ```
-th texture_train.lua -texture data/textures/red-peppers256.o.jpg -model_name pyramid -backend cudnn -num_iterations 1500 -vgg_no_pad true -normalize_gradients true
+th texture_train.lua -texture data/textures/red-peppers256.o.jpg -model_name pyramid -backend cudnn -num_iterations 1500 -vgg_no_pad true -normalize_gradients true -batch_size 15
 ```
 The generator will fit the texture
 
