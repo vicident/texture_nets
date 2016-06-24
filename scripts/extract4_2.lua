@@ -82,7 +82,7 @@ vgg = load_vgg(cmd_params)
 local out_file = hdf5.open(cmd_params.save_to, 'w')
 
 -- Get list of images
-local path_generator = paths.files(cmd_params.images_path, '.JPEG')
+local path_generator = paths.files(cmd_params.images_path, is_image)
 local images = {}
 for image_name in path_generator do
   table.insert(images, image_name)

@@ -89,7 +89,7 @@ local descriptor_net, content_losses, texture_losses = create_descriptor_net()
 ----------------------------------------------------------
 -- Collect image names 
 local image_names = {}
-for f in paths.files(params.train_images_path, 'JPEG') do
+for f in paths.files(params.train_images_path, is_image) do
   table.insert(image_names, f)
 end
 
