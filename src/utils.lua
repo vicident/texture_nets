@@ -190,3 +190,13 @@ function deprocess(img)
   return img
 end
 
+----------------------------------------------------------
+-- Image filename check
+----------------------------------------------------------
+function is_image (a)
+  if ((a:find("jpg") ) or (a:find("JPEG")) or (a:find("JPG")) or (a:find("png")) ) then
+    return true
+  end
+  return false
+end
+ 
