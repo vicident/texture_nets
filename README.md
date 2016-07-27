@@ -1,3 +1,5 @@
+The code for Instance normalization note will be uploaded soon.
+
 ## Texture Networks: Feed-forward Synthesis of Textures and Stylized Images
 
 In [our paper](http://arxiv.org/abs/1603.03417) we describe a faster way to generate textures and stylize images. It requires learning a feedforward generator with a loss function proposed by [Gatys et. al.](http://arxiv.org/abs/1505.07376) which takes in our experiments about an hour or two. When the model is trained, a texture sample of any size can be generated instantly.
