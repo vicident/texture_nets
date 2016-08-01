@@ -16,6 +16,10 @@ cd data/pretrained && bash download_models.sh && cd ../..
 
 # Stylization
 
+Content image|  Dalaunay | Modern 
+:-------------------------:|:-------------------------:|:------------------------------:
+![](data/readme_pics/karya.jpg " ") | ![](data/readme_pics/karya512.jpg  " ")| ![](data/readme_pics/karya_s_mo.jpg  " ")
+
 ### Training
 
 Basic example: 
