@@ -20,7 +20,7 @@ Content image|  Dalaunay | Modern
 :-------------------------:|:-------------------------:|:------------------------------:
 ![](data/readme_pics/karya.jpg " ") | ![](data/readme_pics/karya512.jpg  " ")| ![](data/readme_pics/karya_s_mo.jpg  " ")
  -->
-![](data/readme_pics/all.png " ")
+![](data/readme_pics/all.jpg " ")
 
 ### Training
 
