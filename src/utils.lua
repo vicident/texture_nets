@@ -6,28 +6,22 @@ require 'src/SpatialCircularPadding'
 ----------------------------------------------------------
 -- Shortcuts 
 ----------------------------------------------------------
-function convc(in_,out_, k, s, m)
+function conv(in_,out_, k, s, m)
     m = m or 1
     s = s or 1
 
-    local pad = (k-1)/2*m
+    local to_pad = (k-1)/2*m
 
-    if pad == 0 then
+    if to_pad == 0 then
       return backend.SpatialConvolution(in_, out_, k, k, s, s, 0, 0)
     else
 
       local net = nn.Sequential()
-      net:add(nn.SpatialCircularPadding(pad,pad,pad,pad))
+      net:add(pad(to_pad,to_pad,to_pad,to_pad))
       net:add(backend.SpatialConvolution(in_, out_, k, k, s, s, 0, 0))
 
       return net
     end
-end
-
-function conv(in_,out_, k, s, m)
-    m = m or 1
-    s = s or 1
-    return backend.SpatialConvolution(in_, out_, k, k, s, s, (k-1)/2*m, (k-1)/2*m)
 end
 
 function bn(in_, m)
@@ -171,12 +165,20 @@ end
 -- We need to rescale from [0, 1] to [0, 255], convert from RGB to BGR,
 -- and subtract the mean pixel.
 function preprocess(img)
-  local mean_pixel = torch.DoubleTensor({103.939, 116.779, 123.68})
+  local mean_pixel = torch.FloatTensor({103.939, 116.779, 123.68})
   local perm = torch.LongTensor{3, 2, 1}
   img = img:index(1, perm):mul(255.0)
   mean_pixel = mean_pixel:view(3, 1, 1):expandAs(img)
   img:add(-1, mean_pixel)
   return img
+end
+
+function preprocess1(images)
+  local out = images:clone()
+  for i=1, images:size(1) do
+    out[i] = preprocess(images[i]:clone())
+  end
+  return out
 end
 
 
@@ -190,13 +192,3 @@ function deprocess(img)
   return img
 end
 
-----------------------------------------------------------
--- Image filename check
-----------------------------------------------------------
-function is_image (a)
-  if ((a:find("jpg") ) or (a:find("JPEG")) or (a:find("JPG")) or (a:find("png")) ) then
-    return true
-  end
-  return false
-end
- 

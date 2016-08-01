@@ -3,32 +3,91 @@ require 'src/texture_loss'
 
 require 'loadcaffe'
 
+local ArtisticCriterion, parent = torch.class('nn.ArtisticCriterion', 'nn.Module')
+
+function ArtisticCriterion:__init(params)
+   parent.__init(self)
+
+   self.descriptor_net, self.content_modules, self.texture_modules = create_descriptor_net(params, cnn)
+   self.gradInput = nil
+end
+
+function ArtisticCriterion:updateOutput(input)
+
+  local pred = input[1]
+  local target = input[2]
+
+  -- Compute target content features
+
+  if #self.content_modules > 0 then
+    for k, module in pairs(self.texture_modules) do
+      module.active = false
+    end
+    for k, module in pairs(self.content_modules) do
+      module.active = false
+    end
+    self.descriptor_net:forward(target)
+  end
+  
+  -- Now forward with images from generator
+  for k, module in pairs(self.texture_modules) do
+    module.active = true
+  end
+  for k, module in pairs(self.content_modules) do
+    module.active = true
+    module.target:resizeAs(module.output)
+    module.target:copy(module.output)
+  end
+  self.descriptor_net:forward(pred)
+  
+  local loss = 0
+  for _, mod in ipairs(self.content_modules) do
+    loss = loss + mod.loss
+  end
+  for _, mod in ipairs(self.texture_modules) do
+    loss = loss + mod.loss
+  end
+
+  return loss
+end
+
+function ArtisticCriterion:updateGradInput(input, gradOutput)
+  self.gradInput= self.gradInput or {nil,input[2].new()}
+  -- self.gradInput[2]:resizeAs(input[2]):zero()
+
+  self.gradInput[1] = self.descriptor_net:backward(input[1])
+  return self.gradInput
+end
+
 function nop()
   -- nop.  not needed by our net
 end
 
-function create_descriptor_net()
-    
+
+function create_descriptor_net(params)
+
   local cnn = loadcaffe.load(params.proto_file, params.model_file, params.backend):cuda()
 
   -- load texture
   local texture_image = image.load(params.texture, 3)
-
-  texture_image = image.scale(texture_image, params.image_size, 'bilinear')
+  if params.style_size > 0 then 
+    texture_image = image.scale(texture_image, params.style_size, 'bicubic'):float()
+  end
   local texture_image = preprocess(texture_image):cuda():add_dummy()
 
-  params.content_layers = params.content_layers or ''
 
+  params.content_layers = params.content_layers or ''
   local content_layers = params.content_layers:split(",") 
-  local texture_layers   = params.texture_layers:split(",")
+  
+  local texture_layers  = params.texture_layers:split(",")
 
   -- Set up the network, inserting texture and content loss modules
-  local content_losses, texture_losses = {}, {}
+  local content_modules, texture_modules = {}, {}
   local next_content_idx, next_texture_idx = 1, 1
   local net = nn.Sequential()
 
   for i = 1, #cnn do
-    if next_content_idx <= #content_layers or next_texture_idx <= #texture_layers then
+     if next_content_idx <= #content_layers or next_texture_idx <= #texture_layers then
       local layer = cnn:get(i)
       local name = layer.name
       local layer_type = torch.type(layer)
@@ -44,7 +103,6 @@ function create_descriptor_net()
           layer.padW = 0 
           layer.padH = 0 
       end
-
       net:add(layer)
    
       ---------------------------------
@@ -53,17 +111,12 @@ function create_descriptor_net()
       if name == content_layers[next_content_idx] then
         print("Setting up content layer", i, ":", layer.name)
 
-        local this_contents = {}
-
-        local target = torch.Tensor()
-
         local norm = false
-        local loss_module = nn.ContentLoss(params.content_weight, target, norm):cuda()
+        local loss_module = nn.ContentLoss(params.content_weight, norm):cuda()
         net:add(loss_module)
-        table.insert(content_losses, loss_module)
+        table.insert(content_modules, loss_module)
         next_content_idx = next_content_idx + 1
       end
-
       ---------------------------------
       -- Texture
       ---------------------------------
@@ -80,7 +133,7 @@ function create_descriptor_net()
         local loss_module = nn.TextureLoss(params.texture_weight, target, norm):cuda()
         
         net:add(loss_module)
-        table.insert(texture_losses, loss_module)
+        table.insert(texture_modules, loss_module)
         next_texture_idx = next_texture_idx + 1
       end
     end
@@ -99,5 +152,5 @@ function create_descriptor_net()
   end
   collectgarbage()
       
-  return net, content_losses, texture_losses
+  return net, content_modules, texture_modules
 end

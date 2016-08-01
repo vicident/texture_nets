@@ -2,7 +2,7 @@
 
 local ratios = {32, 16, 8, 4, 2, 1}
 
-local act = function() return nn.LeakyReLU(nil, true) end
+local act = function() return nn.ReLU(nil, true) end
 local conv_num = 8
 
 local cur = nil
@@ -13,9 +13,11 @@ for i = 1, #ratios do
         local tmp =  nn.SpatialAveragePooling(ratios[i], ratios[i], ratios[i], ratios[i], 0, 0)
         
         seq:add(tmp)
-        seq:add(nn.NoiseFill(num_noise_channels))
+        if params.mode == 'texture' then
+            seq:add(nn.NoiseFill(3))
+        end 
 
-        seq:add(conv(net_input_depth, conv_num, 3))
+        seq:add(conv(3, conv_num, 3))
         seq:add(bn(conv_num))
         seq:add(act())
 
@@ -26,8 +28,6 @@ for i = 1, #ratios do
         seq:add(conv(conv_num, conv_num, 1))
         seq:add(bn(conv_num))
         seq:add(act())
-
-
 
     if i == 1 then
         seq:add(nn.SpatialUpSamplingNearest(2))
@@ -40,7 +40,6 @@ for i = 1, #ratios do
         -- Batch norm before merging 
         seq:add(bn(conv_num))
         cur_temp:add(bn(conv_num*(i-1)))
-
 
         cur:add(nn.Concat(2):add(cur_temp):add(seq))
         
@@ -58,7 +57,7 @@ for i = 1, #ratios do
 
         
 
-        if i == #ratios then
+        if i == #ratios then 
             cur:add(conv(conv_num*i, 3, 1))
         else
             cur:add(nn.SpatialUpSamplingNearest(2)) 

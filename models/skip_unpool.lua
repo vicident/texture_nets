@@ -2,15 +2,18 @@
 
 local act = function() return nn.LeakyReLU(nil, true) end
 
-local nums_3x3down = {16, 32, 64, 128, 128}
+local nums_3x3down = {16, 32, 64, 128}
 local nums_1x1 = {4, 4, 4, 4, 4}
-local nums_3x3up = {16, 32, 64, 128, 128}
+local nums_3x3up = {16, 32, 64, 128}
 
-local model = nn.Sequential():add(nn.NoiseFill(num_noise_channels))
+local model = nn.Sequential()
+if params.mode == 'texture' then
+    net:add(nn.NoiseFill(3))
+end
+
 model_tmp = model
 
-
-input_depth = net_input_depth
+input_depth = 3
 for i = 1,#nums_3x3down do
       
         local deeper = nn.Sequential()
@@ -22,11 +25,14 @@ for i = 1,#nums_3x3down do
         skip:add(bn(nums_1x1[i]))
         skip:add(act())
         
-        
-        
-        deeper:add(conv(input_depth, nums_3x3down[i], 3,2))
+  
+        local poolingModule = nn.SpatialMaxPooling(2,2,2,2)
+        deeper:add(conv(input_depth, nums_3x3down[i], 3,1))
         deeper:add(bn(nums_3x3down[i]))
         deeper:add(act())
+
+        deeper:add(poolingModule)
+             
 
         deeper:add(conv(nums_3x3down[i], nums_3x3down[i], 3))
         deeper:add(bn(nums_3x3down[i]))
@@ -38,16 +44,28 @@ for i = 1,#nums_3x3down do
             k = nums_3x3down[i]
         else
             deeper:add(deeper_main)
-            k = nums_3x3up[i+1]
+            
+            deeper:add(conv(nums_3x3up[i+1], nums_3x3up[i], 3))
+            deeper:add(bn(nums_3x3down[i]))
+            -- deeper:add(act())
+            
+            k = nums_3x3up[i]
         end
 
-        deeper:add(nn.SpatialUpSamplingNearest(2))
+        -- deeper:add(nn.SpatialUpSamplingNearest(2))
+        -- deeper:add(nn.Debug())
+        deeper:add(nn.SpatialMaxUnpooling(poolingModule))
+        -- deeper:add(nn.Copy())
 
         deeper:add(bn(k))
         skip:add(bn(nums_1x1[i]))
         
 
         model_tmp:add(conv(nums_1x1[i] +  k, nums_3x3up[i], 3))
+        model_tmp:add(bn(nums_3x3up[i]))
+        model_tmp:add(act())
+
+        model_tmp:add(conv(nums_3x3up[i], nums_3x3up[i], 3))
         model_tmp:add(bn(nums_3x3up[i]))
         model_tmp:add(act())
 
@@ -60,5 +78,7 @@ for i = 1,#nums_3x3down do
         model_tmp = deeper_main
 end
 model:add(conv(nums_3x3up[1], 3, 1,1))
+model = nn.Sequential():add(nn.ConcatTable():add(nn.Identity()):add(model)):add(nn.CAddTable())
+
 
 return model
