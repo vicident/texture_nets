@@ -30,7 +30,7 @@ Basic example:
 th train.lua -data <path to any image dataset>  -style_image path/to/img.jpg
 ```
 
-The image dataset should be structured as in [fb.resnet.torch](https://github.com/facebook/fb.resnet.torch) having `train` and `val` folders and some folders corresponding to classes as you were doing classification. You can create a dummy folder `train/dymmy/` and `val/dummy/` and store all the images in them. Only images from `train` forlder will be used.  Change the code or rename folders to use `val` folder. 
+The image dataset should be structured as in [fb.resnet.torch](https://github.com/facebook/fb.resnet.torch) having `train` and `val` folders and some folders corresponding to classes as you were doing classification. You can create a dummy folder `train/dymmy/` and `val/dummy/` and store all the images in them. Only images from `train` forlder will be used.  Change the code or rename folders to use `val` folder. You can use any dataset for example `mscoco` or `imagenet`. Use validation part if using `imagenet`.
 
 To achieve the results from the paper you need to play with `-image_size`, `-style_size`, `-style_layers`, `-content_layers`, `-style_weight`. 
 
