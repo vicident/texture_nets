@@ -44,7 +44,7 @@ th test.lua -input_image path/to/image.jpg -model data/checkpoints/model.t7
 
 Play with `-image_size` here. 
 
-You can find a pretrained model [here](https://yadi.sk/d/0YY_AkFltrVpL). It is *not* the model from the paper.
+You can find a **pretrained model** [here](https://yadi.sk/d/0YY_AkFltrVpL). It is *not* the model from the paper.
 
 ## Generating textures
 
