@@ -55,8 +55,6 @@ cmd:option('-data', '', 'Path to dataset. Structure like in fb.resnet.torch repo
 cmd:option('-manualSeed', 0)
 cmd:option('-nThreads', 4, 'Data loading threads.')
 
-cmd:option('-prefix', '')
-
 params = cmd:parse(arg)
 
 params.normalize_gradients = params.normalize_gradients ~= 'false'
@@ -168,8 +166,8 @@ for it = 1, params.num_iterations do
     end
     if use_display then 
       display.image(target_for_display, {win=1, width=512,title = 'Target'})
-      display.image(imgs, {win=0, width=512,title = params.prefix})
-      display.plot(loss_history, {win=2, labels={'iteration', 'Loss'}, title='Gpu ' .. params.prefix .. ' Loss'})
+      display.image(imgs, {win=0, width=512})
+      display.plot(loss_history, {win=2, labels={'iteration', 'Loss'}})
     end
   end
   
