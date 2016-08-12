@@ -32,6 +32,7 @@ cmd:option('-image_size', 256)
 
 cmd:option('-content_weight',1)
 cmd:option('-style_weight', 1)
+cmd:option('-tv_weight', 0, 'Total variation weight.')
 
 cmd:option('-style_image', '')
 cmd:option('-style_size', 256)
