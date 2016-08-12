@@ -7,7 +7,10 @@ require 'optim'
 
 local DataLoader = require 'dataloader'
 
-display = require('display')
+use_display, display = pcall(require, 'display')
+if not use_display then 
+  print('torch.display not found. unable to plot') 
+end
 
 require 'src/utils'
 require 'src/descriptor_net'
@@ -162,9 +165,11 @@ for it = 1, params.num_iterations do
       local img = deprocess(output[i])
       table.insert(imgs, torch.clamp(img,0,1))
     end
-    display.image(target_for_display, {win=1, width=512,title = 'Target'})
-    display.image(imgs, {win=0, width=512,title = params.prefix})
-    display.plot(loss_history, {win=2, labels={'iteration', 'Loss'}, title='Gpu ' .. params.prefix .. ' Loss'})
+    if use_display then 
+      display.image(target_for_display, {win=1, width=512,title = 'Target'})
+      display.image(imgs, {win=0, width=512,title = params.prefix})
+      display.plot(loss_history, {win=2, labels={'iteration', 'Loss'}, title='Gpu ' .. params.prefix .. ' Loss'})
+    end
   end
   
   if it%2000 == 0 then 
