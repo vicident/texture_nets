@@ -35,4 +35,4 @@ print(stylized:size())
 stylized = deprocess(stylized[1])
 
 -- Save
-image.save(params.save_path, stylized)
+image.save(params.save_path, torch.clamp(stylized,0,1))
