@@ -22,20 +22,20 @@ for i = 1,#nums_3x3down do
         model_tmp:add(nn.Concat(2):add(skip):add(deeper))
 
         skip:add(conv(input_depth, nums_1x1[i], 1,1))
-        skip:add(bn(nums_1x1[i]))
+        skip:add(normalization(nums_1x1[i]))
         skip:add(act())
         
   
         local poolingModule = nn.SpatialMaxPooling(2,2,2,2)
         deeper:add(conv(input_depth, nums_3x3down[i], 3,1))
-        deeper:add(bn(nums_3x3down[i]))
+        deeper:add(normalization(nums_3x3down[i]))
         deeper:add(act())
 
         deeper:add(poolingModule)
              
 
         deeper:add(conv(nums_3x3down[i], nums_3x3down[i], 3))
-        deeper:add(bn(nums_3x3down[i]))
+        deeper:add(normalization(nums_3x3down[i]))
         deeper:add(act())
 
         deeper_main = nn.Sequential()
@@ -46,7 +46,7 @@ for i = 1,#nums_3x3down do
             deeper:add(deeper_main)
             
             deeper:add(conv(nums_3x3up[i+1], nums_3x3up[i], 3))
-            deeper:add(bn(nums_3x3down[i]))
+            deeper:add(normalization(nums_3x3down[i]))
             -- deeper:add(act())
             
             k = nums_3x3up[i]
@@ -57,20 +57,20 @@ for i = 1,#nums_3x3down do
         deeper:add(nn.SpatialMaxUnpooling(poolingModule))
         -- deeper:add(nn.Copy())
 
-        deeper:add(bn(k))
-        skip:add(bn(nums_1x1[i]))
+        deeper:add(normalization(k))
+        skip:add(normalization(nums_1x1[i]))
         
 
         model_tmp:add(conv(nums_1x1[i] +  k, nums_3x3up[i], 3))
-        model_tmp:add(bn(nums_3x3up[i]))
+        model_tmp:add(normalization(nums_3x3up[i]))
         model_tmp:add(act())
 
         model_tmp:add(conv(nums_3x3up[i], nums_3x3up[i], 3))
-        model_tmp:add(bn(nums_3x3up[i]))
+        model_tmp:add(normalization(nums_3x3up[i]))
         model_tmp:add(act())
 
         model_tmp:add(conv(nums_3x3up[i], nums_3x3up[i], 1))
-        model_tmp:add(bn(nums_3x3up[i]))
+        model_tmp:add(normalization(nums_3x3up[i]))
         model_tmp:add(act())
         
         

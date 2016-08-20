@@ -18,15 +18,15 @@ for i = 1, #ratios do
         end 
 
         seq:add(conv(3, conv_num, 3))
-        seq:add(bn(conv_num))
+        seq:add(normalization(conv_num))
         seq:add(act())
 
         seq:add(conv(conv_num, conv_num, 3))
-        seq:add(bn(conv_num))
+        seq:add(normalization(conv_num))
         seq:add(act())
 
         seq:add(conv(conv_num, conv_num, 1))
-        seq:add(bn(conv_num))
+        seq:add(normalization(conv_num))
         seq:add(act())
 
     if i == 1 then
@@ -38,21 +38,21 @@ for i = 1, #ratios do
         cur = nn.Sequential()
 
         -- Batch norm before merging 
-        seq:add(bn(conv_num))
-        cur_temp:add(bn(conv_num*(i-1)))
+        seq:add(normalization(conv_num))
+        cur_temp:add(normalization(conv_num*(i-1)))
 
         cur:add(nn.Concat(2):add(cur_temp):add(seq))
         
         cur:add(conv(conv_num*i, conv_num*i, 3))
-        cur:add(bn(conv_num*i))
+        cur:add(normalization(conv_num*i))
         cur:add(act())
 
         cur:add(conv(conv_num*i, conv_num*i, 3))
-        cur:add(bn(conv_num*i))
+        cur:add(normalization(conv_num*i))
         cur:add(act())
 
         cur:add(conv(conv_num*i, conv_num*i, 1))
-        cur:add(bn(conv_num*i))
+        cur:add(normalization(conv_num*i))
         cur:add(act())
 
         

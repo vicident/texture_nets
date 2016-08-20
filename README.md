@@ -5,7 +5,7 @@ In [our paper](http://arxiv.org/abs/1603.03417) we describe a faster way to gene
 [Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022) presents a better architectural design for the generator network. By switching `batch_norm` to `instance norm` we facilitate the learning process resulting in much better quality.
 
 # Prerequisites
-- [Torch7](http://torch.ch/docs/getting-started.html)  
+- [Torch7](http://torch.ch/docs/getting-started.html) + [loadcaffe](https://github.com/szagoruyko/loadcaffe)
 - cudnn + torch.cudnn (optionally)
 - [display](https://github.com/szym/display) (optionally)
 
@@ -24,13 +24,35 @@ Content image|  Dalaunay | Modern
 
 ### Training
 
-Basic example: 
+#### Preparing image dataset
+
+You can use an image dataset of any kind. For my experiments I tried `Imagenet` and `MS COCO` datasets. The structure of the folders should be the following:
+```
+dataset/train
+dataset/train/dummy
+dataset/val/
+dataset/val/dummy
+```
+
+The dummy folders should contain images. The dataloader is based on one used in[fb.resnet.torch](https://github.com/facebook/fb.resnet.torch). 
+
+Here is a quick example for MSCOCO: 
+```
+wget http://msvocds.blob.core.windows.net/coco2014/train2014.zip
+wget http://msvocds.blob.core.windows.net/coco2014/val2014.zip
+unzip train2014.zip
+unzip val2014.zip
+mkdir -p dataset/train
+mkdir -p dataset/val
+ln -s `pwd`/val2014 dataset/val/dummy
+ln -s `pwd`/train2014 dataset/train/dummy
+```
+
+#### Training a network
 
 ```
 th train.lua -data <path to any image dataset>  -style_image path/to/img.jpg
 ```
-
-The image dataset should be structured as in [fb.resnet.torch](https://github.com/facebook/fb.resnet.torch) having `train` and `val` folders and some folders corresponding to classes as you were doing classification. You can create a dummy folder `train/dymmy/` and `val/dummy/` and store all the images in them. Only images from `train` forlder will be used.  Change the code or rename folders to use `val` folder. You can use any dataset for example `mscoco` or `imagenet`. Use validation part if using `imagenet`.
 
 To achieve the results from the paper you need to play with `-image_size`, `-style_size`, `-style_layers`, `-content_layers`, `-style_weight`. 
 

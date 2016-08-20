@@ -1,4 +1,3 @@
-require 'cutorch'
 require 'nn'
 require 'loadcaffe'
 require 'src/SpatialCircularPadding'
@@ -24,16 +23,29 @@ function conv(in_,out_, k, s, m)
     end
 end
 
-function bn(in_, m)
-    return nn.SpatialBatchNormalization(in_,nil,m)
-end
-
 ---------------------------------------------------------
 -- Helper function
 ---------------------------------------------------------
 
+-- from fb.resnet.torch
+function deepCopy(tbl)
+   -- creates a copy of a network with new modules and the same tensors
+   local copy = {}
+   for k, v in pairs(tbl) do
+      if type(v) == 'table' then
+         copy[k] = deepCopy(v)
+      else
+         copy[k] = v
+      end
+   end
+   if torch.typename(tbl) then
+      torch.setmetatable(copy, torch.typename(tbl))
+   end
+   return copy
+end
+
 -- adds first dummy dimension
-function torch.add_dummy(self)
+function torch.Tensor:add_dummy()
   local sz = self:size()
   local new_sz = torch.Tensor(sz:size()+1)
   new_sz[1] = 1
@@ -46,17 +58,9 @@ function torch.add_dummy(self)
   end
 end
 
-function torch.FloatTensor:add_dummy()
-  return torch.add_dummy(self)
+if cutorch then 
+  torch.CudaTensor.add_dummy = torch.Tensor.add_dummy
 end
-function torch.DoubleTensor:add_dummy()
-  return torch.add_dummy(self)
-end
-
-function torch.CudaTensor:add_dummy()
-  return torch.add_dummy(self)
-end
-
 
 ---------------------------------------------------------
 -- DummyGradOutput

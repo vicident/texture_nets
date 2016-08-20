@@ -1,9 +1,13 @@
 require 'torch'
-require 'cutorch'
 require 'nn'
-require 'cunn'
 require 'image'
 require 'optim'
+
+require 'cutorch'
+require 'cunn'
+
+require 'src/utils'
+require 'src/descriptor_net'
 
 local DataLoader = require 'dataloader'
 
@@ -11,9 +15,6 @@ use_display, display = pcall(require, 'display')
 if not use_display then 
   print('torch.display not found. unable to plot') 
 end
-
-require 'src/utils'
-require 'src/descriptor_net'
 
 ----------------------------------------------------------
 -- Parameters
@@ -26,6 +27,7 @@ cmd:option('-style_layers', 'relu1_1,relu2_1,relu3_1,relu4_1', 'Layer to attach 
 cmd:option('-learning_rate', 1e-3)
 
 cmd:option('-num_iterations', 50000)
+cmd:option('-save_every', 1000)
 cmd:option('-batch_size', 1)
 
 cmd:option('-image_size', 256)
@@ -44,6 +46,7 @@ cmd:option('-model', 'pyramid', 'Path to generator model description file.')
 
 cmd:option('-normalize_gradients', 'false', 'L1 gradient normalization inside descriptor net. ')
 cmd:option('-vgg_no_pad', 'false')
+cmd:option('-normalization', 'instance', 'batch|instance')
 
 cmd:option('-proto_file', 'data/pretrained/VGG_ILSVRC_19_layers_deploy.prototxt', 'Pretrained')
 cmd:option('-model_file', 'data/pretrained/VGG_ILSVRC_19_layers.caffemodel')
@@ -66,6 +69,12 @@ params.texture_weight = params.style_weight
 params.texture_layers = params.style_layers
 params.texture = params.style_image
 
+if params.normalization == 'instance' then
+  require 'InstanceNormalization'
+  normalization = nn.InstanceNormalization
+elseif params.normalization == 'batch' then
+  normalization = nn.SpatialBatchNormalization
+end
 
 if params.mode == 'texture' then
 	params.content_layers = ''
@@ -74,8 +83,6 @@ if params.mode == 'texture' then
 	conv = convc
 else
   pad = nn.SpatialReplicationPadding
-  params.in_iter = params.batch_size
-  params.batch_size = 1 
 end
 
 trainLoader, valLoader = DataLoader.create(params)
@@ -112,24 +119,23 @@ function feval(x)
   gradParameters:zero()
   
   local loss = 0
-  for hh = 1, params.in_iter do 
+  
   -- Get batch 
-    local images = trainLoader:get()
+  local images = trainLoader:get()
 
-    target_for_display = images.target
-    local images_target = preprocess1(images.target):cuda()
-    local images_input = images.input:cuda()
+  target_for_display = images.target
+  local images_target = preprocess1(images.target):cuda()
+  local images_input = images.input:cuda()-0.5
 
-    -- Forward
-    local out = net:forward(images_input)
-    loss = loss + crit:forward({out, images_target})
-    
-    -- Backward
-    local grad = crit:backward({out, images_target}, nil)
-    net:backward(images_input, grad[1])
-  end
+  -- Forward
+  local out = net:forward(images_input)
+  loss = loss + crit:forward({out, images_target})
+  
+  -- Backward
+  local grad = crit:backward({out, images_target}, nil)
+  net:backward(images_input, grad[1])
 
-  loss = loss/params.batch_size/params.in_iter
+  loss = loss/params.batch_size
   
   table.insert(loss_history, {iteration,loss})
   print('#it: ', iteration, 'loss: ', loss)
@@ -176,8 +182,8 @@ for it = 1, params.num_iterations do
   end
 
   -- Dump net
-  if it%1000 == 0 then 
-    torch.save(params.checkpoints_path .. '/model_' .. it .. '.t7', net:clearState())
+  if it%params.save_every == 0 or it == params.num_iterations then 
+    local net_to_save = cudnn.convert(deepCopy(net):float():clearState(), nn)
+    torch.save(paths.concat(params.checkpoints_path, 'model_' .. it .. '.t7'), net_to_save)
   end
 end
-torch.save(params.checkpoints_path .. 'model.t7', net:clearState())
