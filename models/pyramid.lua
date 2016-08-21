@@ -66,4 +66,4 @@ for i = 1, #ratios do
 end
 model = cur
 
-return model
+return model:add(nn.TVLoss(params.tv_weight))

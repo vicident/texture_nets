@@ -22,7 +22,7 @@ local function res_block()
 end
 
 
-local model = nn.Sequential():add(nn.TVLoss(params.tv_weight))
+local model = nn.Sequential()
 
 if params.mode == 'texture' then
   model:add(nn.NoiseFill(3))
@@ -60,4 +60,4 @@ model:add(nn.ReLU(true))
 model:add(pad(1, 1, 1, 1))
 model:add(backend.SpatialConvolution(32, 3, 3, 3, 1, 1, 0, 0))
 
-return model
+return model:add(nn.TVLoss(params.tv_weight))

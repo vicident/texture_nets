@@ -81,4 +81,4 @@ model:add(conv(nums_3x3up[1], 3, 1,1))
 model = nn.Sequential():add(nn.ConcatTable():add(nn.Identity()):add(model)):add(nn.CAddTable())
 
 
-return model
+return model:add(nn.TVLoss(params.tv_weight))
