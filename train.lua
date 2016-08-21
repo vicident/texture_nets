@@ -125,7 +125,7 @@ function feval(x)
 
   target_for_display = images.target
   local images_target = preprocess1(images.target):cuda()
-  local images_input = images.input:cuda()-0.5
+  local images_input = images.input:cuda()
 
   -- Forward
   local out = net:forward(images_input)
