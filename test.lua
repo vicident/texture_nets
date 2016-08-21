@@ -12,6 +12,9 @@ cmd:option('-save_path', 'stylized.jpg', 'Path to save stylized image.')
 cmd:option('-cpu', false, 'use this flag to run on CPU')
 
 local params = cmd:parse(arg)
+if params.cpu then 
+  print ('CPU version is not stable for now. https://github.com/soumith/cudnn.torch/issues/251')
+end
 
 -- Load model and set type
 local model = torch.load(params.model_t7)
