@@ -1,8 +1,10 @@
 # Texture Networks + Instance normalization: Feed-forward Synthesis of Textures and Stylized Images
 
-In [our paper](http://arxiv.org/abs/1603.03417) we describe a faster way to generate textures and stylize images. It requires learning a feedforward generator with a loss function proposed by [Gatys et. al.](http://arxiv.org/abs/1505.07376). When the model is trained, a texture sample or stylized image any size can be generated instantly.
+In the paper [Texture Networks: Feed-forward Synthesis of Textures and Stylized Images](http://arxiv.org/abs/1603.03417) we describe a faster way to generate textures and stylize images. It requires learning a feedforward generator with a loss function proposed by [Gatys et. al.](http://arxiv.org/abs/1505.07376). When the model is trained, a texture sample or stylized image any size can be generated instantly.
 
 [Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022) presents a better architectural design for the generator network. By switching `batch_norm` to `instance norm` we facilitate the learning process resulting in much better quality.
+
+This also implements the stylization part from [Perceptual Losses for Real-Time Style Transfer and Super-Resolution](https://arxiv.org/abs/1603.08155).
 
 # Prerequisites
 - [Torch7](http://torch.ch/docs/getting-started.html) + [loadcaffe](https://github.com/szagoruyko/loadcaffe)
@@ -54,9 +56,9 @@ ln -s `pwd`/train2014 dataset/train/dummy
 th train.lua -data <path to any image dataset>  -style_image path/to/img.jpg
 ```
 
-To achieve the results from the paper you need to play with `-image_size`, `-style_size`, `-style_layers`, `-content_layers`, `-style_weight`. 
+To achieve the results from the paper you need to play with `-image_size`, `-style_size`, `-style_layers`, `-content_layers`, `-style_weight`, `-tv_weight`. 
 
-Do not hesitate to set `batch_size` to one, but remember the larger `batch_size` the larger `learning_rate` you can use.   
+Do not hesitate to set `-batch_size` to one, but remember the larger `-batch_size` the larger `-learning_rate` you can use.   
 
 ### Testing
 
@@ -64,7 +66,7 @@ Do not hesitate to set `batch_size` to one, but remember the larger `batch_size`
 th test.lua -input_image path/to/image.jpg -model data/checkpoints/model.t7
 ```
 
-Play with `-image_size` here. 
+Play with `-image_size` here. Raise `-cpu` flag to use CPU for processing. 
 
 You can find a **pretrained model** [here](https://yadi.sk/d/0YY_AkFltrVpL). It is *not* the model from the paper.
 
@@ -168,4 +170,4 @@ This model tried to fit both texture and content losses on a fixed set of 16 ima
 
 The code is based on [Justin Johnson's great code](https://github.com/jcjohnson/neural-style) for artistic style.
 
-The work was supported by Yandex and Skoltech.
+The work was supported by [Yandex](https://www.yandex.ru/) and [Skoltech](http://sites.skoltech.ru/compvision/).
