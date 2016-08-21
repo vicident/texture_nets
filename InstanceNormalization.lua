@@ -25,7 +25,7 @@ function InstanceNormalization:__init(nOutput, eps, momentum, affine)
 
    if self.affine then 
       self.weight = torch.Tensor(nOutput):uniform()
-      self.bias = torch.Tensor(nOutput):uniform():div(10):zero()
+      self.bias = torch.Tensor(nOutput):zero()
       self.gradWeight = torch.Tensor(nOutput)
       self.gradBias = torch.Tensor(nOutput)
    end 
