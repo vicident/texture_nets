@@ -52,9 +52,7 @@ function ArtisticCriterion:updateOutput(input)
 end
 
 function ArtisticCriterion:updateGradInput(input, gradOutput)
-  self.gradInput= self.gradInput or {nil,input[2].new()}
-  -- self.gradInput[2]:resizeAs(input[2]):zero()
-
+  self.gradInput= self.gradInput or {nil, input[2].new()}
   self.gradInput[1] = self.descriptor_net:backward(input[1])
   return self.gradInput
 end
@@ -75,10 +73,7 @@ function create_descriptor_net(params)
   end
   local texture_image = preprocess(texture_image):cuda():add_dummy()
 
-
-  params.content_layers = params.content_layers or ''
   local content_layers = params.content_layers:split(",") 
-  
   local texture_layers  = params.texture_layers:split(",")
 
   -- Set up the network, inserting texture and content loss modules
