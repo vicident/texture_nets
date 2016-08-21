@@ -21,23 +21,23 @@ end
 ----------------------------------------------------------
 local cmd = torch.CmdLine()
 
-cmd:option('-content_layers', 'relu4_2', 'Layer to attach content loss. Only one supported for now.')
-cmd:option('-style_layers', 'relu1_1,relu2_1,relu3_1,relu4_1', 'Layer to attach content loss. Only one supported for now.')
+cmd:option('-content_layers', 'relu4_2', 'Layer to attach content loss.')
+cmd:option('-style_layers', 'relu1_1,relu2_1,relu3_1,relu4_1', 'Layer to attach style loss.')
 
 cmd:option('-learning_rate', 1e-3)
 
-cmd:option('-num_iterations', 50000)
-cmd:option('-save_every', 1000)
+cmd:option('-num_iterations', 50000, 'Number of steps to perform.')
+cmd:option('-save_every', 1000, 'Save model every N iterations.')
 cmd:option('-batch_size', 1)
 
-cmd:option('-image_size', 256)
+cmd:option('-image_size', 256, 'Training images size')
 
-cmd:option('-content_weight',1)
+cmd:option('-content_weight', 1)
 cmd:option('-style_weight', 1)
 cmd:option('-tv_weight', 0, 'Total variation weight.')
 
-cmd:option('-style_image', '')
-cmd:option('-style_size', 256)
+cmd:option('-style_image', '', 'Path to style image')
+cmd:option('-style_size', 256, 'Resize style image to this size, no resize if 0.')
 
 cmd:option('-mode', 'style', 'style|texture')
 
@@ -59,6 +59,7 @@ cmd:option('-manualSeed', 0)
 cmd:option('-nThreads', 4, 'Data loading threads.')
 
 params = cmd:parse(arg)
+assert(params.mode == 'style', 'Only stylization is implemented in master branch. You can find texture generation in texture_nets_v1 branch.')
 
 params.normalize_gradients = params.normalize_gradients ~= 'false'
 params.vgg_no_pad = params.vgg_no_pad ~= 'false'
