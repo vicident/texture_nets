@@ -101,24 +101,4 @@ function ImagenetDataset:get_input_target()
   end
 end
 
--- function torch.add_dummy(self)
---   local sz = self:size()
---   local new_sz = torch.Tensor(sz:size()+1)
---   new_sz[1] = 1
---   new_sz:narrow(1,2,sz:size()):copy(torch.Tensor{sz:totable()})
-
---   if self:isContiguous() then
---     return self:view(new_sz:long():storage())
---   else
---     return self:reshape(new_sz:long():storage())
---   end
--- end
-
--- function torch.FloatTensor:add_dummy()
---   return torch.add_dummy(self)
--- end
--- function torch.DoubleTensor:add_dummy()
---   return torch.add_dummy(self)
--- end
-
 return M.ImagenetDataset
