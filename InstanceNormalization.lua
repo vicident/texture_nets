@@ -90,3 +90,9 @@ function InstanceNormalization:clearState()
    
    self.bn:clearState()
 end
+
+function InstanceNormalization:evaluate()
+end
+
+function InstanceNormalization:training()
+end

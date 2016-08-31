@@ -28,6 +28,7 @@ else
 end
 
 model:type(tp)
+model:evaluate()
 
 -- Load image and scale
 local img = image.load(params.input_image, 3):float()
