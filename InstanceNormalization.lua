@@ -12,7 +12,7 @@ function InstanceNormalization:__init(nOutput, eps, momentum, affine)
    self.running_var = torch.ones(nOutput)
 
    self.eps = eps or 1e-5
-   self.momentum = momentum or 0.1
+   self.momentum = momentum or 0.0
    if affine ~= nil then
       assert(type(affine) == 'boolean', 'affine has to be true/false')
       self.affine = affine
