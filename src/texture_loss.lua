@@ -56,11 +56,6 @@ function TextureLoss:updateGradInput(input, gradOutput)
     local sz = input:size()
     local input3d = input:view(sz[1], sz[2], sz[3]*sz[4])
     self.gradInput = self.gram:backward(input3d, dG):viewAs(input)
-
-    -- if self.normalize then
-    --   self.gradInput:div(torch.norm(self.gradInput, 1) + 1e-8)
-    -- end
-
     self.gradInput:mul(self.strength)
     self.gradInput:add(gradOutput)
   else

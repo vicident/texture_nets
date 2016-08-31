@@ -44,7 +44,6 @@ cmd:option('-mode', 'style', 'style|texture')
 cmd:option('-checkpoints_path', 'data/checkpoints/', 'Directory to store intermediate results.')
 cmd:option('-model', 'pyramid', 'Path to generator model description file.')
 
-cmd:option('-normalize_gradients', 'false', 'L1 gradient normalization inside descriptor net. ')
 cmd:option('-vgg_no_pad', 'false')
 cmd:option('-normalization', 'instance', 'batch|instance')
 
