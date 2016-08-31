@@ -3,9 +3,6 @@ require 'nn'
 require 'image'
 require 'optim'
 
-require 'cutorch'
-require 'cunn'
-
 require 'src/utils'
 require 'src/descriptor_net'
 
@@ -57,7 +54,32 @@ cmd:option('-data', '', 'Path to dataset. Structure like in fb.resnet.torch repo
 cmd:option('-manualSeed', 0)
 cmd:option('-nThreads', 4, 'Data loading threads.')
 
+cmd:option('-cpu', false, 'use this flag to run on CPU')
+
 params = cmd:parse(arg)
+
+if params.cpu then
+  dtype = 'torch.FloatTensor'
+  params.backend = 'nn'
+  backend = nn
+else
+  dtype = 'torch.CudaTensor'
+
+  require 'cutorch'
+  require 'cunn'
+
+  torch.CudaTensor.add_dummy = torch.FloatTensor.add_dummy
+  
+  if params.backend == 'cudnn' then
+    require 'cudnn'
+    cudnn.fastest = true
+    cudnn.benchmark = true
+    backend = cudnn
+  else
+    backend = nn
+  end
+
+end
 assert(params.mode == 'style', 'Only stylization is implemented in master branch. You can find texture generation in texture_nets_v1 branch.')
 
 params.normalize_gradients = params.normalize_gradients ~= 'false'
@@ -79,6 +101,7 @@ end
 if params.mode == 'texture' then
 	params.content_layers = ''
   pad = nn.SpatialCircularPadding
+
 	-- Use circular padding
 	conv = convc
 else
@@ -87,19 +110,9 @@ end
 
 trainLoader, valLoader = DataLoader.create(params)
 
-if params.backend == 'cudnn' then
-  require 'cudnn'
-  cudnn.fastest = true
-  cudnn.benchmark = true
-  backend = cudnn
-else
-  backend = nn
-end
-
 -- Define model
-local net = require('models/' .. params.model):cuda()
-
-local crit = nn.ArtisticCriterion(params)
+local net = require('models/' .. params.model):type(dtype)
+local criterion = nn.ArtisticCriterion(params)
 
 ----------------------------------------------------------
 -- feval
@@ -124,15 +137,15 @@ function feval(x)
   local images = trainLoader:get()
 
   target_for_display = images.target
-  local images_target = preprocess1(images.target):cuda()
-  local images_input = images.input:cuda()
+  local images_target = preprocess_many(images.target):type(dtype)
+  local images_input = images.input:type(dtype)
 
   -- Forward
   local out = net:forward(images_input)
-  loss = loss + crit:forward({out, images_target})
+  loss = loss + criterion:forward({out, images_target})
   
   -- Backward
-  local grad = crit:backward({out, images_target}, nil)
+  local grad = criterion:backward({out, images_target}, nil)
   net:backward(images_input, grad[1])
 
   loss = loss/params.batch_size
@@ -183,7 +196,10 @@ for it = 1, params.num_iterations do
 
   -- Dump net
   if it%params.save_every == 0 or it == params.num_iterations then 
-    local net_to_save = cudnn.convert(deepCopy(net):float():clearState(), nn)
+    local net_to_save = deepCopy(net):float():clearState()
+    if params.backend == 'cudnn' then
+      net_to_save = cudnn.convert(net_to_save, nn)
+    end
     torch.save(paths.concat(params.checkpoints_path, 'model_' .. it .. '.t7'), net_to_save)
   end
 end

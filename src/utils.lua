@@ -45,7 +45,7 @@ function deepCopy(tbl)
 end
 
 -- adds first dummy dimension
-function torch.Tensor:add_dummy()
+function torch.FloatTensor:add_dummy()
   local sz = self:size()
   local new_sz = torch.Tensor(sz:size()+1)
   new_sz[1] = 1
@@ -59,7 +59,7 @@ function torch.Tensor:add_dummy()
 end
 
 if cutorch then 
-  torch.CudaTensor.add_dummy = torch.Tensor.add_dummy
+  torch.CudaTensor.add_dummy = torch.FloatTensor.add_dummy
 end
 
 ---------------------------------------------------------
@@ -177,7 +177,7 @@ function preprocess(img)
   return img
 end
 
-function preprocess1(images)
+function preprocess_many(images)
   local out = images:clone()
   for i=1, images:size(1) do
     out[i] = preprocess(images[i]:clone())

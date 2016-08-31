@@ -30,7 +30,7 @@ end
 model:type(tp)
 
 -- Load image and scale
-local img = image.load(params.input_image, 3)
+local img = image.load(params.input_image, 3):float()
 if params.image_size > 0 then
   img = image.scale(img, params.image_size, params.image_size)
 end
