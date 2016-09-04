@@ -53,7 +53,7 @@ end
 
 function ArtisticCriterion:updateGradInput(input, gradOutput)
   self.gradInput= self.gradInput or {nil, input[2].new()}
-  self.gradInput[1] = self.descriptor_net:backward(input[1])
+  self.gradInput[1] = self.descriptor_net:updateGradInput(input[1])
   return self.gradInput
 end
 
@@ -87,11 +87,7 @@ function create_descriptor_net(params)
       local name = layer.name
       local layer_type = torch.type(layer)
       local is_pooling = (layer_type == 'cudnn.SpatialMaxPooling' or layer_type == 'nn.SpatialMaxPooling')
-      
-      if layer_type == 'nn.SpatialConvolution' or layer_type == 'nn.SpatialConvolutionMM' or layer_type == 'cudnn.SpatialConvolution' then
-        layer.accGradParameters = nop
-      end
-      
+
       if params.vgg_no_pad and (layer_type == 'nn.SpatialConvolution' or layer_type == 'nn.SpatialConvolutionMM' or layer_type == 'cudnn.SpatialConvolution') then
           print (name, ': padding set to 0')
 
