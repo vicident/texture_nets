@@ -95,7 +95,7 @@ function create_descriptor_net(params)
           layer.padH = 0 
       end
       net:add(layer)
-   
+      print('layer name:', name)
       ---------------------------------
       -- Content
       ---------------------------------

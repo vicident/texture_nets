@@ -6,6 +6,8 @@ require 'optim'
 require 'src/utils'
 require 'src/descriptor_net'
 
+paths.dofile('util.lua')
+
 local DataLoader = require 'dataloader'
 
 use_display, display = pcall(require, 'display')
@@ -47,6 +49,8 @@ cmd:option('-normalization', 'instance', 'batch|instance')
 cmd:option('-proto_file', 'data/pretrained/VGG_ILSVRC_19_layers_deploy.prototxt', 'Pretrained')
 cmd:option('-model_file', 'data/pretrained/VGG_ILSVRC_19_layers.caffemodel')
 cmd:option('-backend', 'cudnn', 'nn|cudnn')
+
+cmd:option('-binary', 0, 'Binary net flag.')
 
 -- Dataloader
 cmd:option('-dataset', 'style')
@@ -100,8 +104,7 @@ end
 
 if params.mode == 'texture' then
 	params.content_layers = ''
-  pad = nn.SpatialCircularPadding
-
+    pad = nn.SpatialCircularPadding
 	-- Use circular padding
 	conv = convc
 else
@@ -113,7 +116,7 @@ trainLoader, valLoader = DataLoader.create(params)
 -- Define model
 local net = require('models/' .. params.model):type(dtype)
 local criterion = nn.ArtisticCriterion(params)
-
+print(net)
 ----------------------------------------------------------
 -- feval
 ----------------------------------------------------------
@@ -122,7 +125,9 @@ local criterion = nn.ArtisticCriterion(params)
 local iteration = 0
 
 local parameters, gradParameters = net:getParameters()
+realParams = parameters:clone()
 local loss_history = {}
+
 function feval(x)
   iteration = iteration + 1
 
@@ -140,6 +145,32 @@ function feval(x)
   local images_target = preprocess_many(images.target):type(dtype)
   local images_input = images.input:type(dtype)
 
+  local bNodes = {}
+
+  if params.binary then
+    local nodes_all = model:listModules()
+    -- Select all weighted layers
+    lcnt = 0
+    for i=1,#nodes_all do
+      if nodes_all[i].weight ~= nil then
+        if nodes_all[i].weight:nDimension() >= 2 then
+          table.insert(bNodes, nodes_all[i])
+          lcnt = lcnt + 1
+        end
+      end
+    end
+  end
+
+  if #bNodes > 0 then
+     -- Binarize weights in selected layers
+    meancenterConvParms(bNodes)
+    clampConvParms(bNodes)
+    realParams:copy(parameters)
+    binarizeConvParms(bNodes)
+  end
+
+  print (string.format("%d layers have been binarized", #bNodes))
+
   -- Forward
   local out = net:forward(images_input)
   loss = loss + criterion:forward({out, images_target})
@@ -149,7 +180,13 @@ function feval(x)
   net:backward(images_input, grad[1])
 
   loss = loss/params.batch_size
-  
+
+  if #bNodes > 0 then
+    -- Binarize gradients
+    parameters:copy(realParams)
+    updateBinaryGradWeight(bNodes)
+  end
+
   table.insert(loss_history, {iteration,loss})
   print('#it: ', iteration, 'loss: ', loss)
   return loss, gradParameters
