@@ -148,7 +148,7 @@ function feval(x)
   local bNodes = {}
 
   if params.binary then
-    local nodes_all = model:listModules()
+    local nodes_all = net:listModules()
     -- Select all weighted layers
     lcnt = 0
     for i=1,#nodes_all do
