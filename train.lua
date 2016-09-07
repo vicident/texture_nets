@@ -169,7 +169,9 @@ function feval(x)
     binarizeConvParms(bNodes)
   end
 
-  print (string.format("%d layers have been binarized", #bNodes))
+  if iteration < 10 then
+    print (string.format("%d layers have been binarized", #bNodes))
+  end
 
   -- Forward
   local out = net:forward(images_input)
