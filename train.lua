@@ -147,15 +147,13 @@ function feval(x)
 
   local bNodes = {}
 
-  if params.binary then
+  if params.binary > 0 then
     local nodes_all = net:listModules()
     -- Select all weighted layers
-    lcnt = 0
     for i=1,#nodes_all do
       if nodes_all[i].weight ~= nil then
         if nodes_all[i].weight:nDimension() >= 2 then
           table.insert(bNodes, nodes_all[i])
-          lcnt = lcnt + 1
         end
       end
     end
